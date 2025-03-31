@@ -16,7 +16,7 @@
 						<router-link to="/research-portal" class="btn btn-primary btn-lg me-3">
 							Explore Research
 						</router-link>
-						<router-link to="/auth/register" class="btn btn-outline-primary btn-lg">
+						<router-link to="/auth/register" class="btn btn-outline-white btn-lg">
 							Join Our Team
 						</router-link>
 					</div>
@@ -30,7 +30,10 @@
 				<h2 class="text-center mb-5">Explore Our Tools</h2>
 				<div class="row g-4">
 					<div class="col-md-6">
-						<div class="card h-100 shadow-sm hover-card">
+						<div
+							class="card h-100 shadow-sm hover-card bg-light"
+							:class="{ 'bg-dark': isDarkMode }"
+						>
 							<div class="card-body text-center p-5">
 								<i class="fas fa-book fa-3x mb-4 text-primary"></i>
 								<h3>Codebook</h3>
@@ -45,7 +48,10 @@
 						</div>
 					</div>
 					<div class="col-md-6">
-						<div class="card h-100 shadow-sm hover-card">
+						<div
+							class="card h-100 shadow-sm hover-card bg-light"
+							:class="{ 'bg-dark': isDarkMode }"
+						>
 							<div class="card-body text-center p-5">
 								<i class="fas fa-flask fa-3x mb-4 text-primary"></i>
 								<h3>Research Portal</h3>
@@ -64,17 +70,22 @@
 		</section>
 
 		<!-- Research Process Section -->
-		<section class="py-5 bg-light" :class="{ 'bg-dark': isDarkMode }" data-aos="fade-up">
-			<div class="container">
-				<h2 class="text-center mb-5">Our Research Process</h2>
-				<div class="row g-4">
-					<div class="col-md-3" v-for="(step, index) in researchSteps" :key="index">
-						<div class="process-card text-center">
-							<div class="process-icon mb-3">
-								<i :class="step.icon"></i>
+		<section data-aos="fade-up">
+			<div class="py-5 bg-light" :class="{ 'bg-dark': isDarkMode }">
+				<div class="container">
+					<h2 class="text-center mb-5">Our Research Process</h2>
+					<div class="row g-4">
+						<div class="col-md-3" v-for="(step, index) in researchSteps" :key="index">
+							<div
+								class="process-card text-center bg-light"
+								:class="{ 'bg-dark': isDarkMode }"
+							>
+								<div class="process-icon mb-3">
+									<i :class="step.icon"></i>
+								</div>
+								<h4>{{ step.title }}</h4>
+								<p>{{ step.description }}</p>
 							</div>
-							<h4>{{ step.title }}</h4>
-							<p>{{ step.description }}</p>
 						</div>
 					</div>
 				</div>
@@ -85,21 +96,32 @@
 		<section class="py-5" data-aos="fade-up">
 			<div class="container">
 				<h2 class="text-center mb-5">Meet Our Team</h2>
-				<Carousel :items-to-show="3" :wrap-around="true">
+				<Carousel
+					:items-to-show="4"
+					:items-to-scroll="4"
+					:wrap-around="true"
+					:snap-align="'center-even'"
+				>
 					<Slide v-for="member in teamMembers" :key="member.id">
-						<div class="team-card mx-2">
+						<div class="card" style="width: 18rem">
 							<img
-								:src="member.image"
-								:alt="member.name"
-								class="rounded-circle mb-3"
+								src="../assets/images/team/Member.svg"
+								class="card-img-top"
+								alt="..."
 							/>
-							<h4>{{ member.name }}</h4>
-							<p class="text-muted">{{ member.role }}</p>
+							<div class="card-body">
+								<h5 class="card-title">{{ member.name }}</h5>
+								<h6>{{ member.role }}</h6>
+								<p class="card-text">
+									Some quick example text to build on the card title and make up
+									the bulk of the card's content.
+								</p>
+								<a href="#" class="btn btn-primary">Go somewhere</a>
+							</div>
 						</div>
 					</Slide>
 					<template #addons>
 						<Navigation />
-						<Pagination />
 					</template>
 				</Carousel>
 			</div>
@@ -158,6 +180,7 @@
 
 <script>
 import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
+import 'vue3-carousel/carousel.css'
 import { mapState } from 'pinia'
 import { useThemeStore } from '@/stores/theme'
 import AOS from 'aos'
@@ -167,7 +190,7 @@ export default {
 	components: {
 		Carousel,
 		Slide,
-		Pagination,
+		// Pagination,
 		Navigation,
 	},
 	data() {
@@ -186,7 +209,7 @@ export default {
 				{
 					icon: 'fas fa-vial fa-2x text-primary',
 					title: 'Execution',
-					description: 'Data collection and analysis',
+					description: 'Data collection and statistical analysis',
 				},
 				{
 					icon: 'fas fa-chart-line fa-2x text-primary',
@@ -196,28 +219,100 @@ export default {
 			],
 			teamMembers: [
 				{
-					id: 1,
-					name: 'Dr. Sarah Johnson',
-					role: 'Research Director',
+					tier: 1,
+					name: 'Andrew Bugajski',
+					role: 'Associate Vice President of Research and Sponsored Studies',
 					image: '@/assets/images/team/sarah.jpg',
 				},
 				{
-					id: 2,
-					name: 'Dr. Michael Chen',
-					role: 'Lead Researcher',
-					image: '@/assets/images/team/michael.jpg',
+					tier: 2,
+					name: 'Carmen Mitchell',
+					role: 'Director of Research Business Operations',
+					image: '@/assets/images/team/sarah.jpg',
 				},
 				{
-					id: 3,
-					name: 'Dr. Emily Rodriguez',
-					role: 'Clinical Coordinator',
-					image: '@/assets/images/team/emily.jpg',
+					tier: 3,
+					name: 'Kellcee Johnson',
+					role: 'Manager of Research & Sponsored Studies',
+					image: '@/assets/images/team/sarah.jpg',
 				},
 				{
-					id: 4,
-					name: 'Dr. James Wilson',
-					role: 'Statistical Analyst',
-					image: '@/assets/images/team/james.jpg',
+					tier: 4,
+					name: 'Eden Crowsey',
+					role: 'Biostatistician & Research Methodologist',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Walter Wills',
+					role: 'Biostatistician & Research Methodologist',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Jackqueline Hogan',
+					role: 'Research Financial Analyst',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Anna Daly',
+					role: 'Clinical Research Coordinator',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Brandon Montes',
+					role: 'Clinical Research Coordinator',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Lauren Mileythreatt',
+					role: 'Clinical Research Coordinator',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Dana Crowder',
+					role: 'Clinical Research Coordinator',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 4,
+					name: 'Maria Kratz',
+					role: 'Clinical Research Coordinator',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 5,
+					name: 'Meghann Nelson',
+					role: 'Research Assistant',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 5,
+					name: 'Joshua Loute',
+					role: 'Research Assistant',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 5,
+					name: 'Kristen McGraw',
+					role: 'Research Assistant',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 5,
+					name: 'Jenniffer Jaimes',
+					role: 'Research Assistant',
+					image: '@/assets/images/team/sarah.jpg',
+				},
+				{
+					tier: 5,
+					name: 'Brittany Colins',
+					role: 'Research Assistant',
+					image: '@/assets/images/team/sarah.jpg',
 				},
 			],
 			contactForm: {
@@ -241,6 +336,7 @@ export default {
 
 		AOS.init({
 			duration: 1000,
+			once: true,
 		})
 	},
 }
@@ -309,26 +405,22 @@ export default {
 	}
 }
 
+.bg-light .bg-light {
+	background-color: white !important;
+}
+
+.bg-dark .bg-dark {
+	background-color: #1a1a1a !important;
+}
+
 .process-card {
 	padding: 2rem;
-	background: white;
 	border-radius: 10px;
 	box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 	transition: transform 0.3s ease;
 
 	&:hover {
 		transform: translateY(-5px);
-	}
-}
-
-.team-card {
-	text-align: center;
-	padding: 1rem;
-
-	img {
-		width: 150px;
-		height: 150px;
-		object-fit: cover;
 	}
 }
 

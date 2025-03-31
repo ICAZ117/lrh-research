@@ -108,6 +108,7 @@ export default {
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	padding: 0;
 	height: 96px;
+	max-width: 100vw;
 
 	&.navbar-light {
 		background-color: rgba(255, 255, 255, 0.9) !important;

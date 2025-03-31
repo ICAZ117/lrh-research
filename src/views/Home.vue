@@ -1,8 +1,9 @@
 <template>
 	<div class="home">
 		<!-- Hero Section -->
-		<section class="hero" :class="{ dark: isDarkMode }">
-			<div class="container">
+		<section class="hero">
+			<div class="overlay"></div>
+			<div class="container" style="z-index: 2">
 				<div class="row align-items-center min-vh-100">
 					<div class="col-lg-6" data-aos="fade-right">
 						<h1 class="display-4 fw-bold mb-4">
@@ -18,13 +19,6 @@
 						<router-link to="/auth/register" class="btn btn-outline-primary btn-lg">
 							Join Our Team
 						</router-link>
-					</div>
-					<div class="col-lg-6" data-aos="fade-left">
-						<img
-							src="@/assets/images/hero-image.jpg"
-							alt="Research"
-							class="img-fluid rounded-3 shadow-lg"
-						/>
 					</div>
 				</div>
 			</div>
@@ -255,11 +249,36 @@ export default {
 <style lang="scss" scoped>
 .hero {
 	position: relative;
-	padding: 100px 0;
-	background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+	color: white;
+	background-color: transparent;
 
-	&.dark {
-		background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+	&::before {
+		content: '';
+		position: absolute;
+		top: 96px;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: url('../assets/images/hero-image.jpg');
+		background-size: cover;
+		background-position: center top;
+		background-repeat: no-repeat;
+		z-index: 0;
+	}
+
+	& > .overlay {
+		background: linear-gradient(
+			180deg,
+			rgba(var(--LRH-primary-rgb, 0.3)) 0%,
+			rgba(0, 0, 0, 0.3) 100%
+		);
+		z-index: 0;
+		content: '';
+		position: absolute;
+		top: 96px;
+		left: 0;
+		right: 0;
+		bottom: 0;
 	}
 }
 

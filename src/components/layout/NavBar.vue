@@ -106,6 +106,8 @@ export default {
 	backdrop-filter: blur(10px);
 	transition: all 0.3s ease;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	padding: 0;
+	height: 96px;
 
 	&.navbar-light {
 		background-color: rgba(255, 255, 255, 0.9) !important;

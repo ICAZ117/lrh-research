@@ -269,9 +269,10 @@ export default {
 	& > .overlay {
 		background: linear-gradient(
 			180deg,
-			rgba(var(--LRH-primary-rgb, 0.3)) 0%,
-			rgba(0, 0, 0, 0.3) 100%
+			rgba(var(--LRH-primary-rgb), 0.8) 0%,
+			rgba(0, 0, 0, 0.2) 100%
 		);
+		background-color: transparent;
 		z-index: 0;
 		content: '';
 		position: absolute;
@@ -279,7 +280,25 @@ export default {
 		left: 0;
 		right: 0;
 		bottom: 0;
+		transition: background 0.3s ease;
 	}
+}
+
+.dark-mode .hero > .overlay {
+	background: linear-gradient(
+		180deg,
+		rgba(var(--LRH-primary-rgb), 0.8) 0%,
+		rgba(0, 0, 0, 0.5) 100%
+	);
+	background-color: transparent;
+	z-index: 0;
+	content: '';
+	position: absolute;
+	top: 96px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	transition: background 0.3s ease;
 }
 
 .hover-card {

@@ -30,9 +30,9 @@
 				<h2 class="text-center mb-5">Explore Our Tools</h2>
 				<div class="row g-4">
 					<div class="col-md-6">
-						<div
-							class="card h-100 shadow-sm hover-card bg-light"
-							:class="{ 'bg-dark': isDarkMode }"
+						<CursorEffect
+							class="card h-100 shadow-sm hover-card"
+							:isDarkMode="isDarkMode"
 						>
 							<div class="card-body text-center p-5">
 								<i class="fas fa-book fa-3x mb-4 text-primary"></i>
@@ -45,12 +45,12 @@
 									Learn More
 								</router-link>
 							</div>
-						</div>
+						</CursorEffect>
 					</div>
 					<div class="col-md-6">
-						<div
-							class="card h-100 shadow-sm hover-card bg-light"
-							:class="{ 'bg-dark': isDarkMode }"
+						<CursorEffect
+							class="card h-100 shadow-sm hover-card"
+							:isDarkMode="isDarkMode"
 						>
 							<div class="card-body text-center p-5">
 								<i class="fas fa-flask fa-3x mb-4 text-primary"></i>
@@ -63,7 +63,7 @@
 									Enter Portal
 								</router-link>
 							</div>
-						</div>
+						</CursorEffect>
 					</div>
 				</div>
 			</div>
@@ -71,24 +71,30 @@
 
 		<!-- Research Process Section -->
 		<section data-aos="fade-up">
-			<div class="py-5 bg-light" :class="{ 'bg-dark': isDarkMode }">
-				<div class="container">
-					<h2 class="text-center mb-5">Our Research Process</h2>
-					<div class="row g-4">
-						<div class="col-md-3" v-for="(step, index) in researchSteps" :key="index">
+			<div class="">
+				<CursorEffect :isDarkMode="isDarkMode">
+					<div class="py-5 container">
+						<h2 class="text-center mb-5">Our Research Process</h2>
+						<div class="row g-4">
 							<div
-								class="process-card text-center bg-light"
-								:class="{ 'bg-dark': isDarkMode }"
+								class="col-md-3"
+								v-for="(step, index) in researchSteps"
+								:key="index"
 							>
-								<div class="process-icon mb-3">
-									<i :class="step.icon"></i>
+								<div
+									class="process-card text-center bg-superlight"
+									:class="{ 'bg-superdark': isDarkMode }"
+								>
+									<div class="process-icon mb-3">
+										<i :class="step.icon"></i>
+									</div>
+									<h4>{{ step.title }}</h4>
+									<p>{{ step.description }}</p>
 								</div>
-								<h4>{{ step.title }}</h4>
-								<p>{{ step.description }}</p>
 							</div>
 						</div>
 					</div>
-				</div>
+				</CursorEffect>
 			</div>
 		</section>
 
@@ -103,11 +109,7 @@
 					:snap-align="'center-even'"
 				>
 					<Slide v-for="member in teamMembers" :key="member.id">
-						<div
-							class="card bg-light"
-							:class="{ 'bg-dark': isDarkMode }"
-							style="width: 18rem"
-						>
+						<CursorEffect class="card" style="width: 18rem" :isDarkMode="isDarkMode">
 							<img
 								v-if="member.image"
 								:src="member.image"
@@ -129,7 +131,7 @@
 								</p>
 								<a href="#" class="btn btn-primary">Go somewhere</a>
 							</div>
-						</div>
+						</CursorEffect>
 					</Slide>
 					<template #addons>
 						<Navigation />
@@ -140,65 +142,56 @@
 
 		<!-- Contact Section -->
 		<section id="contact" data-aos="fade-up">
-			<div class="contact-section pb-5 position-relative">
-				<div
-					class="container p-4 bg-light"
-					:class="{ 'bg-dark': isDarkMode }"
-					ref="contactSection"
-					@mousemove="handleMouseMove"
-					@mouseenter="handleMouseEnter"
-					@mouseleave="handleMouseLeave"
-				>
-					<!-- Add the cursor effect element -->
-					<div
-						v-if="showCursorEffect"
-						class="cursor-effect"
-						:style="{ left: cursorX + 'px', top: cursorY + 'px' }"
-					></div>
-					<div class="row align-items-center">
-						<div class="col-lg-6">
-							<h2 class="mb-4">Get in Touch</h2>
-							<form @submit.prevent="handleContact">
-								<div class="mb-3">
-									<input
-										type="text"
-										class="form-control"
-										placeholder="Your Name"
-										v-model="contactForm.name"
-									/>
+			<div class="contact-section pb-5 position-relative container">
+				<CursorEffect :isDarkMode="isDarkMode" style="border-radius: 2rem">
+					<div class="p-4">
+						<div class="row align-items-center">
+							<div class="col-lg-6">
+								<h2 class="mb-4">Get in Touch</h2>
+								<form @submit.prevent="handleContact">
+									<div class="mb-3">
+										<input
+											type="text"
+											class="form-control"
+											placeholder="Your Name"
+											v-model="contactForm.name"
+										/>
+									</div>
+									<div class="mb-3">
+										<input
+											type="email"
+											class="form-control"
+											placeholder="Your Email"
+											v-model="contactForm.email"
+										/>
+									</div>
+									<div class="mb-3">
+										<textarea
+											class="form-control"
+											rows="4"
+											placeholder="Your Message"
+											v-model="contactForm.message"
+										></textarea>
+									</div>
+									<button type="submit" class="btn btn-primary">
+										Send Message
+									</button>
+								</form>
+							</div>
+							<div class="col-lg-6">
+								<div class="contact-info ps-lg-5">
+									<h3>Contact Information</h3>
+									<p>
+										<i class="fas fa-map-marker-alt me-2"></i>1324 Lakeland
+										Hills Blvd, Lakeland, FL 33805
+									</p>
+									<p><i class="fas fa-phone me-2"></i>(863) 687-1100</p>
+									<p><i class="fas fa-envelope me-2"></i>research@lrh.org</p>
 								</div>
-								<div class="mb-3">
-									<input
-										type="email"
-										class="form-control"
-										placeholder="Your Email"
-										v-model="contactForm.email"
-									/>
-								</div>
-								<div class="mb-3">
-									<textarea
-										class="form-control"
-										rows="4"
-										placeholder="Your Message"
-										v-model="contactForm.message"
-									></textarea>
-								</div>
-								<button type="submit" class="btn btn-primary">Send Message</button>
-							</form>
-						</div>
-						<div class="col-lg-6">
-							<div class="contact-info ps-lg-5">
-								<h3>Contact Information</h3>
-								<p>
-									<i class="fas fa-map-marker-alt me-2"></i>1324 Lakeland Hills
-									Blvd, Lakeland, FL 33805
-								</p>
-								<p><i class="fas fa-phone me-2"></i>(863) 687-1100</p>
-								<p><i class="fas fa-envelope me-2"></i>research@lrh.org</p>
 							</div>
 						</div>
 					</div>
-				</div>
+				</CursorEffect>
 			</div>
 		</section>
 	</div>
@@ -210,6 +203,7 @@ import 'vue3-carousel/carousel.css'
 import { mapState } from 'pinia'
 import { useThemeStore } from '@/stores/theme'
 import AOS from 'aos'
+import CursorEffect from '@/components/CursorEffect.vue'
 
 export default {
 	name: 'Home',
@@ -218,6 +212,7 @@ export default {
 		Slide,
 		// Pagination,
 		Navigation,
+		CursorEffect,
 	},
 	data() {
 		return {
@@ -346,10 +341,6 @@ export default {
 				email: '',
 				message: '',
 			},
-
-			showCursorEffect: false,
-			cursorX: 0,
-			cursorY: 0,
 		}
 	},
 	computed: {
@@ -359,20 +350,6 @@ export default {
 		handleContact() {
 			// Implement contact form submission logic
 			console.log('Contact form submitted:', this.contactForm)
-		},
-		handleMouseMove(event) {
-			const contactSection = this.$refs.contactSection
-			const rect = contactSection.getBoundingClientRect()
-
-			// Calculate cursor position relative to the contact section
-			this.cursorX = event.clientX - rect.left
-			this.cursorY = event.clientY - rect.top
-		},
-		handleMouseEnter() {
-			this.showCursorEffect = true
-		},
-		handleMouseLeave() {
-			this.showCursorEffect = false
 		},
 	},
 	mounted() {
@@ -449,11 +426,13 @@ export default {
 	}
 }
 
-.bg-light .bg-light {
+.bg-light .bg-light,
+.bg-superlight {
 	background-color: white !important;
 }
 
-.bg-dark .bg-dark {
+.bg-dark .bg-dark,
+.bg-superdark {
 	background-color: #1a1a1a !important;
 }
 
@@ -475,47 +454,13 @@ export default {
 	overflow: hidden; /* Keep the effect inside the container */
 }
 
-.bg-dark .cursor-effect {
-	position: absolute;
-	width: 150px;
-	height: 150px;
-	border-radius: 50%;
-	pointer-events: none; /* So it doesn't interfere with interactions */
-	transform: translate(-50%, -50%);
-	background: radial-gradient(
-		circle,
-		var(--LRH-primary) 0%,
-		rgba(var(--LRH-primary-rgb), 0.6) 50%,
-		rgba(var(--LRH-primary-rgb), 0.2) 70%,
-		transparent 100%
-	);
-	z-index: 1; /* This is now below the content but above the container background */
-	mix-blend-mode: color; /* Gives a glassy effect */
-	filter: blur(10px);
-	transition: width 0.3s, height 0.3s;
-}
-
-.bg-light .cursor-effect {
-	position: absolute;
-	width: 100px;
-	height: 100px;
-	border-radius: 50%;
-	pointer-events: none; /* So it doesn't interfere with interactions */
-	transform: translate(-50%, -50%);
-	background: radial-gradient(
-		circle,
-		rgba(var(--LRH-primary-rgb), 0.8) 0%,
-		rgba(var(--LRH-primary-rgb), 0.5) 5%,
-		transparent 100%
-	);
-	z-index: 1; /* This is now below the content but above the container background */
-	filter: blur(10px);
-	transition: width 0.3s, height 0.3s;
-}
-
 /* Make sure content stays above the cursor effect */
 .contact-section .container .row {
 	position: relative;
 	z-index: 2;
+}
+
+.card {
+	background-color: transparent;
 }
 </style>

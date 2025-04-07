@@ -103,8 +103,19 @@
 					:snap-align="'center-even'"
 				>
 					<Slide v-for="member in teamMembers" :key="member.id">
-						<div class="card" style="width: 18rem">
+						<div
+							class="card bg-light"
+							:class="{ 'bg-dark': isDarkMode }"
+							style="width: 18rem"
+						>
 							<img
+								v-if="member.image"
+								:src="member.image"
+								class="card-img-top"
+								alt="..."
+							/>
+							<img
+								v-else
 								src="../assets/images/team/Member.svg"
 								class="card-img-top"
 								alt="..."
@@ -128,48 +139,63 @@
 		</section>
 
 		<!-- Contact Section -->
-		<section id="contact" class="py-5 contact-section" data-aos="fade-up">
-			<div class="container">
-				<div class="row align-items-center">
-					<div class="col-lg-6">
-						<h2 class="mb-4">Get in Touch</h2>
-						<form @submit.prevent="handleContact">
-							<div class="mb-3">
-								<input
-									type="text"
-									class="form-control"
-									placeholder="Your Name"
-									v-model="contactForm.name"
-								/>
+		<section id="contact" data-aos="fade-up">
+			<div class="contact-section pb-5 position-relative">
+				<div
+					class="container p-4 bg-light"
+					:class="{ 'bg-dark': isDarkMode }"
+					ref="contactSection"
+					@mousemove="handleMouseMove"
+					@mouseenter="handleMouseEnter"
+					@mouseleave="handleMouseLeave"
+				>
+					<!-- Add the cursor effect element -->
+					<div
+						v-if="showCursorEffect"
+						class="cursor-effect"
+						:style="{ left: cursorX + 'px', top: cursorY + 'px' }"
+					></div>
+					<div class="row align-items-center">
+						<div class="col-lg-6">
+							<h2 class="mb-4">Get in Touch</h2>
+							<form @submit.prevent="handleContact">
+								<div class="mb-3">
+									<input
+										type="text"
+										class="form-control"
+										placeholder="Your Name"
+										v-model="contactForm.name"
+									/>
+								</div>
+								<div class="mb-3">
+									<input
+										type="email"
+										class="form-control"
+										placeholder="Your Email"
+										v-model="contactForm.email"
+									/>
+								</div>
+								<div class="mb-3">
+									<textarea
+										class="form-control"
+										rows="4"
+										placeholder="Your Message"
+										v-model="contactForm.message"
+									></textarea>
+								</div>
+								<button type="submit" class="btn btn-primary">Send Message</button>
+							</form>
+						</div>
+						<div class="col-lg-6">
+							<div class="contact-info ps-lg-5">
+								<h3>Contact Information</h3>
+								<p>
+									<i class="fas fa-map-marker-alt me-2"></i>1324 Lakeland Hills
+									Blvd, Lakeland, FL 33805
+								</p>
+								<p><i class="fas fa-phone me-2"></i>(863) 687-1100</p>
+								<p><i class="fas fa-envelope me-2"></i>research@lrh.org</p>
 							</div>
-							<div class="mb-3">
-								<input
-									type="email"
-									class="form-control"
-									placeholder="Your Email"
-									v-model="contactForm.email"
-								/>
-							</div>
-							<div class="mb-3">
-								<textarea
-									class="form-control"
-									rows="4"
-									placeholder="Your Message"
-									v-model="contactForm.message"
-								></textarea>
-							</div>
-							<button type="submit" class="btn btn-primary">Send Message</button>
-						</form>
-					</div>
-					<div class="col-lg-6">
-						<div class="contact-info ps-lg-5">
-							<h3>Contact Information</h3>
-							<p>
-								<i class="fas fa-map-marker-alt me-2"></i>1324 Lakeland Hills Blvd,
-								Lakeland, FL 33805
-							</p>
-							<p><i class="fas fa-phone me-2"></i>(863) 687-1100</p>
-							<p><i class="fas fa-envelope me-2"></i>research@lrh.org</p>
 						</div>
 					</div>
 				</div>
@@ -222,97 +248,97 @@ export default {
 					tier: 1,
 					name: 'Andrew Bugajski',
 					role: 'Associate Vice President of Research and Sponsored Studies',
-					image: '@/assets/images/team/sarah.jpg',
+					image: '../assets/images/team/AndrewBugajski.jpg',
 				},
 				{
 					tier: 2,
 					name: 'Carmen Mitchell',
 					role: 'Director of Research Business Operations',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/CarmenMitchell.jpg',
 				},
 				{
 					tier: 3,
 					name: 'Kellcee Johnson',
 					role: 'Manager of Research & Sponsored Studies',
-					image: '@/assets/images/team/sarah.jpg',
+					image: '@/assets/images/team/KellceeJohnson.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Eden Crowsey',
 					role: 'Biostatistician & Research Methodologist',
-					image: '@/assets/images/team/sarah.jpg',
+					image: '@/assets/images/team/EdenCrowsey.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Walter Wills',
 					role: 'Biostatistician & Research Methodologist',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/WalterWills.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Jackqueline Hogan',
 					role: 'Research Financial Analyst',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/JackquelineHogan.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Anna Daly',
 					role: 'Clinical Research Coordinator',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/AnnaDaly.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Brandon Montes',
 					role: 'Clinical Research Coordinator',
-					image: '@/assets/images/team/sarah.jpg',
+					image: '@/assets/images/team/BrandonMontes.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Lauren Mileythreatt',
 					role: 'Clinical Research Coordinator',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/LaurenMileythreatt.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Dana Crowder',
 					role: 'Clinical Research Coordinator',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/DanaCrowder.jpg',
 				},
 				{
 					tier: 4,
 					name: 'Maria Kratz',
 					role: 'Clinical Research Coordinator',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/MariaKratz.jpg',
 				},
 				{
 					tier: 5,
 					name: 'Meghann Nelson',
 					role: 'Research Assistant',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/MeghannNelson.jpg',
 				},
 				{
 					tier: 5,
 					name: 'Joshua Loute',
 					role: 'Research Assistant',
-					image: '@/assets/images/team/sarah.jpg',
+					image: '@/assets/images/team/JoshuaLoute.jpg',
 				},
 				{
 					tier: 5,
 					name: 'Kristen McGraw',
 					role: 'Research Assistant',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/KristenMcGraw.jpg',
 				},
 				{
 					tier: 5,
 					name: 'Jenniffer Jaimes',
 					role: 'Research Assistant',
-					image: '@/assets/images/team/sarah.jpg',
+					// image: '@/assets/images/team/JennifferJaimes.jpg',
 				},
 				{
 					tier: 5,
 					name: 'Brittany Colins',
 					role: 'Research Assistant',
-					image: '@/assets/images/team/sarah.jpg',
+					image: '@/assets/images/team/BrittanyColins.jpg',
 				},
 			],
 			contactForm: {
@@ -320,6 +346,10 @@ export default {
 				email: '',
 				message: '',
 			},
+
+			showCursorEffect: false,
+			cursorX: 0,
+			cursorY: 0,
 		}
 	},
 	computed: {
@@ -329,6 +359,20 @@ export default {
 		handleContact() {
 			// Implement contact form submission logic
 			console.log('Contact form submitted:', this.contactForm)
+		},
+		handleMouseMove(event) {
+			const contactSection = this.$refs.contactSection
+			const rect = contactSection.getBoundingClientRect()
+
+			// Calculate cursor position relative to the contact section
+			this.cursorX = event.clientX - rect.left
+			this.cursorY = event.clientY - rect.top
+		},
+		handleMouseEnter() {
+			this.showCursorEffect = true
+		},
+		handleMouseLeave() {
+			this.showCursorEffect = false
 		},
 	},
 	mounted() {
@@ -424,26 +468,54 @@ export default {
 	}
 }
 
-.contact-section {
-	background-attachment: fixed;
-	background-size: cover;
-	background-position: center;
+.contact-section .container {
 	position: relative;
+	z-index: 2;
+	border-radius: 2rem;
+	overflow: hidden; /* Keep the effect inside the container */
+}
 
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(255, 255, 255, 0.9);
-		z-index: 1;
-	}
+.bg-dark .cursor-effect {
+	position: absolute;
+	width: 150px;
+	height: 150px;
+	border-radius: 50%;
+	pointer-events: none; /* So it doesn't interfere with interactions */
+	transform: translate(-50%, -50%);
+	background: radial-gradient(
+		circle,
+		var(--LRH-primary) 0%,
+		rgba(var(--LRH-primary-rgb), 0.6) 50%,
+		rgba(var(--LRH-primary-rgb), 0.2) 70%,
+		transparent 100%
+	);
+	z-index: 1; /* This is now below the content but above the container background */
+	mix-blend-mode: color; /* Gives a glassy effect */
+	filter: blur(10px);
+	transition: width 0.3s, height 0.3s;
+}
 
-	.container {
-		position: relative;
-		z-index: 2;
-	}
+.bg-light .cursor-effect {
+	position: absolute;
+	width: 100px;
+	height: 100px;
+	border-radius: 50%;
+	pointer-events: none; /* So it doesn't interfere with interactions */
+	transform: translate(-50%, -50%);
+	background: radial-gradient(
+		circle,
+		rgba(var(--LRH-primary-rgb), 0.8) 0%,
+		rgba(var(--LRH-primary-rgb), 0.5) 5%,
+		transparent 100%
+	);
+	z-index: 1; /* This is now below the content but above the container background */
+	filter: blur(10px);
+	transition: width 0.3s, height 0.3s;
+}
+
+/* Make sure content stays above the cursor effect */
+.contact-section .container .row {
+	position: relative;
+	z-index: 2;
 }
 </style>

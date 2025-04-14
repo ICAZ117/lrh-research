@@ -164,9 +164,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'pinia'
-import { useThemeStore } from '@/stores/theme'
-import { useAuthStore } from '@/stores/auth'
+import { mapState, mapActions } from 'pinia';
+import { useThemeStore } from '@/stores/theme';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
 	name: 'NavBar',
@@ -175,7 +175,7 @@ export default {
 			mobileUserMenuOpen: false,
 			desktopDropdownOpen: false,
 			dropdownTimer: null,
-		}
+		};
 	},
 	computed: {
 		...mapState(useThemeStore, ['isDarkMode']),
@@ -191,36 +191,36 @@ export default {
 		...mapActions(useThemeStore, ['toggleDarkMode']),
 		...mapActions(useAuthStore, ['logout']),
 		toggleTheme() {
-			this.toggleDarkMode()
+			this.toggleDarkMode();
 		},
 		async handleLogout() {
-			await this.logout()
-			this.$router.push('/auth/login')
+			await this.logout();
+			this.$router.push('/auth/login');
 		},
 		toggleMobileUserMenu() {
-			this.mobileUserMenuOpen = !this.mobileUserMenuOpen
+			this.mobileUserMenuOpen = !this.mobileUserMenuOpen;
 		},
 		// Improved dropdown handling with timers
 		showDesktopDropdown() {
-			this.clearHideDropdownTimer()
-			this.desktopDropdownOpen = true
+			this.clearHideDropdownTimer();
+			this.desktopDropdownOpen = true;
 		},
 		hideDesktopDropdown() {
-			this.desktopDropdownOpen = false
+			this.desktopDropdownOpen = false;
 		},
 		startHideDropdownTimer() {
 			this.dropdownTimer = setTimeout(() => {
-				this.desktopDropdownOpen = false
-			}, 100) // Small delay to prevent flickering
+				this.desktopDropdownOpen = false;
+			}, 100); // Small delay to prevent flickering
 		},
 		clearHideDropdownTimer() {
 			if (this.dropdownTimer) {
-				clearTimeout(this.dropdownTimer)
-				this.dropdownTimer = null
+				clearTimeout(this.dropdownTimer);
+				this.dropdownTimer = null;
 			}
 		},
 	},
-}
+};
 </script>
 
 <style lang="scss" scoped>

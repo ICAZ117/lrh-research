@@ -76,10 +76,10 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
-import { useAuthStore } from '@/stores/auth'
-import { useThemeStore } from '@/stores/theme'
-import { useToast } from 'vue-toastification'
+import { mapState } from 'pinia';
+import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
+import { useToast } from 'vue-toastification';
 
 export default {
 	name: 'Login',
@@ -94,7 +94,7 @@ export default {
 				password: '',
 			},
 			loading: false,
-		}
+		};
 	},
 	computed: {
 		...mapState(useThemeStore, ['isDarkMode']),
@@ -105,33 +105,33 @@ export default {
 			this.errors = {
 				email: '',
 				password: '',
-			}
+			};
 
-			this.loading = true
+			this.loading = true;
 			try {
-				const authStore = useAuthStore()
-				const toast = useToast()
+				const authStore = useAuthStore();
+				const toast = useToast();
 
-				const result = await authStore.login(this.formData.email, this.formData.password)
+				const result = await authStore.login(this.formData.email, this.formData.password);
 				if (result.success) {
-					toast.success('Successfully logged in!')
-					this.$router.push('/')
+					toast.success('Successfully logged in!');
+					this.$router.push('/');
 				} else {
-					toast.error(result.error || 'Failed to login')
+					toast.error(result.error || 'Failed to login');
 					if (result.error.includes('email')) {
-						this.errors.email = result.error
+						this.errors.email = result.error;
 					} else if (result.error.includes('password')) {
-						this.errors.password = result.error
+						this.errors.password = result.error;
 					}
 				}
 			} catch (error) {
-				useToast().error('An unexpected error occurred')
+				useToast().error('An unexpected error occurred');
 			} finally {
-				this.loading = false
+				this.loading = false;
 			}
 		},
 	},
-}
+};
 </script>
 
 <style lang="scss" scoped>

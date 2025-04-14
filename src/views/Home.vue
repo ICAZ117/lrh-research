@@ -102,13 +102,9 @@
 		<section class="py-5" data-aos="fade-up">
 			<div class="container">
 				<h2 class="text-center mb-5">Meet Our Team</h2>
-				<Carousel
-					:items-to-show="4"
-					:items-to-scroll="4"
-					:wrap-around="true"
-					:snap-align="'center-even'"
-				>
-					<Slide v-for="member in teamMembers" :key="member.id">
+				<Carousel :items-to-show="4" :items-to-scroll="4">
+					<!-- :wrap-around="false" -->
+					<Slide v-for="member in homePage.teamMembers" :key="member.id">
 						<CursorEffect class="card" style="width: 18rem" :isDarkMode="isDarkMode">
 							<img
 								v-if="member.image"
@@ -125,11 +121,22 @@
 							<div class="card-body">
 								<h5 class="card-title">{{ member.name }}</h5>
 								<h6>{{ member.role }}</h6>
-								<p class="card-text">
-									Some quick example text to build on the card title and make up
-									the bulk of the card's content.
-								</p>
-								<a href="#" class="btn btn-primary">Go somewhere</a>
+								<div class="card-text">
+									<small>
+										<ul class="list-unstyled">
+											<li v-if="member.email">
+												<i class="fas fa-envelope"></i>
+												<span class="ps-2">{{ member.email }}</span>
+											</li>
+											<li v-if="member.phone">
+												<i class="fas fa-phone"></i>
+												<span class="ps-2">{{
+													formatPhoneNumber(member.phone)
+												}}</span>
+											</li>
+										</ul>
+									</small>
+								</div>
 							</div>
 						</CursorEffect>
 					</Slide>
@@ -198,12 +205,13 @@
 </template>
 
 <script>
-import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
-import 'vue3-carousel/carousel.css'
-import { mapState } from 'pinia'
-import { useThemeStore } from '@/stores/theme'
-import AOS from 'aos'
-import CursorEffect from '@/components/CursorEffect.vue'
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
+import 'vue3-carousel/carousel.css';
+import { mapState } from 'pinia';
+import { useThemeStore } from '@/stores/theme';
+import { usePageDataStore } from '@/stores/pageData';
+import AOS from 'aos';
+import CursorEffect from '@/components/CursorEffect.vue';
 
 export default {
 	name: 'Home',
@@ -238,110 +246,13 @@ export default {
 					description: 'Sharing results with the scientific community',
 				},
 			],
-			teamMembers: [
-				{
-					tier: 1,
-					name: 'Andrew Bugajski',
-					role: 'Associate Vice President of Research and Sponsored Studies',
-					image: '../assets/images/team/AndrewBugajski.jpg',
-				},
-				{
-					tier: 2,
-					name: 'Carmen Mitchell',
-					role: 'Director of Research Business Operations',
-					// image: '@/assets/images/team/CarmenMitchell.jpg',
-				},
-				{
-					tier: 3,
-					name: 'Kellcee Johnson',
-					role: 'Manager of Research & Sponsored Studies',
-					image: '@/assets/images/team/KellceeJohnson.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Eden Crowsey',
-					role: 'Biostatistician & Research Methodologist',
-					image: '@/assets/images/team/EdenCrowsey.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Walter Wills',
-					role: 'Biostatistician & Research Methodologist',
-					// image: '@/assets/images/team/WalterWills.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Jackqueline Hogan',
-					role: 'Research Financial Analyst',
-					// image: '@/assets/images/team/JackquelineHogan.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Anna Daly',
-					role: 'Clinical Research Coordinator',
-					// image: '@/assets/images/team/AnnaDaly.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Brandon Montes',
-					role: 'Clinical Research Coordinator',
-					image: '@/assets/images/team/BrandonMontes.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Lauren Mileythreatt',
-					role: 'Clinical Research Coordinator',
-					// image: '@/assets/images/team/LaurenMileythreatt.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Dana Crowder',
-					role: 'Clinical Research Coordinator',
-					// image: '@/assets/images/team/DanaCrowder.jpg',
-				},
-				{
-					tier: 4,
-					name: 'Maria Kratz',
-					role: 'Clinical Research Coordinator',
-					// image: '@/assets/images/team/MariaKratz.jpg',
-				},
-				{
-					tier: 5,
-					name: 'Meghann Nelson',
-					role: 'Research Assistant',
-					// image: '@/assets/images/team/MeghannNelson.jpg',
-				},
-				{
-					tier: 5,
-					name: 'Joshua Loute',
-					role: 'Research Assistant',
-					image: '@/assets/images/team/JoshuaLoute.jpg',
-				},
-				{
-					tier: 5,
-					name: 'Kristen McGraw',
-					role: 'Research Assistant',
-					// image: '@/assets/images/team/KristenMcGraw.jpg',
-				},
-				{
-					tier: 5,
-					name: 'Jenniffer Jaimes',
-					role: 'Research Assistant',
-					// image: '@/assets/images/team/JennifferJaimes.jpg',
-				},
-				{
-					tier: 5,
-					name: 'Brittany Colins',
-					role: 'Research Assistant',
-					image: '@/assets/images/team/BrittanyColins.jpg',
-				},
-			],
 			contactForm: {
 				name: '',
 				email: '',
 				message: '',
 			},
-		}
+			homePage: {},
+		};
 	},
 	computed: {
 		...mapState(useThemeStore, ['isDarkMode']),
@@ -349,7 +260,10 @@ export default {
 	methods: {
 		handleContact() {
 			// Implement contact form submission logic
-			console.log('Contact form submitted:', this.contactForm)
+			console.log('Contact form submitted:', this.contactForm);
+		},
+		formatPhoneNumber(phoneNumber) {
+			return phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
 		},
 	},
 	mounted() {
@@ -358,9 +272,15 @@ export default {
 		AOS.init({
 			duration: 1000,
 			once: true,
-		})
+		});
 	},
-}
+	async beforeMount() {
+		const pageDataStore = usePageDataStore();
+		await pageDataStore.getHomePage();
+		this.homePage = pageDataStore.homePage;
+		console.log('homePage', this.homePage);
+	},
+};
 </script>
 
 <style lang="scss" scoped>
@@ -458,6 +378,15 @@ export default {
 .contact-section .container .row {
 	position: relative;
 	z-index: 2;
+}
+
+.contact-circle {
+	border-radius: 50%;
+	height: 40px;
+	width: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .card {

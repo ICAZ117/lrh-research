@@ -11,10 +11,10 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
-import { useThemeStore } from './stores/theme'
-import NavBar from './components/layout/NavBar.vue'
-import AppFooter from './components/layout/AppFooter.vue'
+import { mapState } from 'pinia';
+import { useThemeStore } from './stores/theme';
+import NavBar from './components/layout/NavBar.vue';
+import AppFooter from './components/layout/AppFooter.vue';
 
 export default {
 	name: 'App',
@@ -25,7 +25,7 @@ export default {
 	computed: {
 		...mapState(useThemeStore, ['isDarkMode']),
 	},
-}
+};
 </script>
 
 <style lang="scss">

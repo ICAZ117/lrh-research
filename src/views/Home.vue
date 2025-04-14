@@ -102,8 +102,12 @@
 		<section class="py-5" data-aos="fade-up">
 			<div class="container">
 				<h2 class="text-center mb-5">Meet Our Team</h2>
-				<Carousel :items-to-show="4" :items-to-scroll="4">
-					<!-- :wrap-around="false" -->
+				<Carousel
+					:items-to-show="4"
+					:items-to-scroll="4"
+					:snap-align="'start'"
+					:wrap-around="false"
+				>
 					<Slide v-for="member in homePage.teamMembers" :key="member.id">
 						<CursorEffect class="card" style="width: 18rem" :isDarkMode="isDarkMode">
 							<img
@@ -180,7 +184,7 @@
 											v-model="contactForm.message"
 										></textarea>
 									</div>
-									<button type="submit" class="btn btn-primary">
+									<button type="submit" class="btn btn-primary mb-4 mb-lg-0">
 										Send Message
 									</button>
 								</form>
@@ -193,7 +197,10 @@
 										Hills Blvd, Lakeland, FL 33805
 									</p>
 									<p><i class="fas fa-phone me-2"></i>(863) 687-1100</p>
-									<p><i class="fas fa-envelope me-2"></i>research@lrh.org</p>
+									<p>
+										<i class="fas fa-envelope me-2"></i
+										>lrhresearchdepartment@gmail.com
+									</p>
 								</div>
 							</div>
 						</div>
@@ -392,4 +399,20 @@ export default {
 .card {
 	background-color: transparent;
 }
+
+.carousel {
+	--vc-nav-background: var(--LRH-primary);
+	--vc-nav-color: white;
+	--vc-nav-color-hover: #e5e5e5;
+	--vc-nav-border-radius: 50%;
+	--vc-nav-width: 40px;
+	--vc-nav-height: 40px;
+}
+
+// :deep(.carousel__viewport) {
+// 	padding: 0 2rem;
+// 	overflow: hidden;
+// 	margin-left: 2rem;
+// 	width: calc(100% - 4rem);
+// }
 </style>

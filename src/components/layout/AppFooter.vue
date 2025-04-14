@@ -23,15 +23,37 @@
 					<div class="col-md-4 mb-4">
 						<h5>Connect With Us</h5>
 						<div class="social-icons">
-							<a href="#" class="me-3"><i class="fab fa-facebook"></i></a>
-							<a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
-							<a href="#" class="me-3"><i class="fab fa-linkedin"></i></a>
+							<a
+								href="https://www.facebook.com/LakelandRegionalHealth/"
+								target="_blank"
+								class="me-3"
+								><i class="fab fa-facebook"></i
+							></a>
+							<a href="https://x.com/lkldregional" target="_blank" class="me-3"
+								><i class="fab fa-x-twitter"></i
+							></a>
+							<a
+								href="https://www.linkedin.com/company/mylrh/"
+								target="_blank"
+								class="me-3"
+								><i class="fab fa-linkedin"></i
+							></a>
+							<a
+								href="https://www.instagram.com/lakelandregionalhealth"
+								target="_blank"
+								class="me-3"
+								><i class="fab fa-instagram"></i
+							></a>
 						</div>
 					</div>
 				</div>
 				<hr />
 				<div class="text-center">
 					<p>&copy; {{ currentYear }} Lakeland Regional Health. All rights reserved.</p>
+					<p>
+						Powered by
+						<a href="https://icaz117.web.app" target="_blank">Cazalas Technologies</a>
+					</p>
 				</div>
 			</div>
 		</CursorEffect>
@@ -39,9 +61,9 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
-import { useThemeStore } from '@/stores/theme'
-import CursorEffect from '../CursorEffect.vue'
+import { mapState } from 'pinia';
+import { useThemeStore } from '@/stores/theme';
+import CursorEffect from '../CursorEffect.vue';
 
 export default {
 	name: 'AppFooter',
@@ -51,10 +73,10 @@ export default {
 	computed: {
 		...mapState(useThemeStore, ['isDarkMode']),
 		currentYear() {
-			return new Date().getFullYear()
+			return new Date().getFullYear();
 		},
 	},
-}
+};
 </script>
 
 <style lang="scss" scoped>

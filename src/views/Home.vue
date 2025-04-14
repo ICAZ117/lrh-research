@@ -433,7 +433,7 @@ export default {
 
 .bg-dark .bg-dark,
 .bg-superdark {
-	background-color: #1a1a1a !important;
+	background-color: var(--dark-3) !important;
 }
 
 .process-card {

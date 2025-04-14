@@ -107,7 +107,7 @@ export default {
 	transition: all 0.3s ease;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	padding: 0;
-	height: 96px;
+	height: var(--navbar-height);
 	max-width: 100vw;
 
 	&.navbar-light {

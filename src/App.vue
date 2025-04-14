@@ -42,6 +42,16 @@ export default {
 	--bs-primary-rgb: var(--LRH-primary-rgb);
 	--bs-body-font-family: var(--LRH-font-family);
 
+	// Page Variables
+	--navbar-height: 96px;
+	--light-1: white;
+	--light-2: var(--bs-light); // #f8f9fa
+	--light-accent: #e9ecef;
+	--dark-1: #272b30;
+	--dark-2: var(--bs-dark); // #212529
+	--dark-3: #1a1a1a;
+	--dark-accent: #495057;
+
 	// Global settings
 	font-family: var(--LRH-font-family);
 }
@@ -108,7 +118,7 @@ export default {
 }
 
 .dark-mode {
-	background-color: #1a1a1a;
+	background-color: var(--dark-3);
 	color: #ffffff;
 }
 </style>

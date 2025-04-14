@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getAuth } from 'firebase/auth'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebase'
 import Home from '../views/Home.vue'
 
 const routes = [
@@ -19,39 +21,22 @@ const routes = [
     name: 'Codebook',
     component: () => import('../views/Codebook.vue')
   },
-  // {
-  //   path: '/research-portal',
-  //   name: 'ResearchPortal',
-  //   component: () => import('../views/research/Dashboard.vue'),
-  //   meta: { requiresAuth: true }
-  // },
-  // {
-  //   path: '/research-portal/new',
-  //   name: 'NewProject',
-  //   component: () => import('../views/research/NewProject.vue'),
-  //   meta: { requiresAuth: true, requiresStaff: true }
-  // },
-  // {
-  //   path: '/research-portal/:projectId',
-  //   name: 'ProjectDetails',
-  //   component: () => import('../views/research/ProjectDetails.vue'),
-  //   meta: { requiresAuth: true }
-  // },
-  // {
-  //   path: '/auth/login',
-  //   name: 'Login',
-  //   component: () => import('../views/auth/Login.vue')
-  // },
-  // {
-  //   path: '/auth/register',
-  //   name: 'Register',
-  //   component: () => import('../views/auth/Register.vue')
-  // },
-  // {
-  //   path: '/auth/forgot-password',
-  //   name: 'ForgotPassword',
-  //   component: () => import('../views/auth/ForgotPassword.vue')
-  // },
+  {
+    path: '/auth/login',
+    name: 'Login',
+    component: () => import('../views/auth/Login.vue')
+  },
+  {
+    path: '/auth/register',
+    name: 'Register',
+    component: () => import('../views/auth/Register.vue')
+  },
+  {
+    path: '/auth/register-staff',
+    name: 'RegisterStaff',
+    component: () => import('../views/auth/RegisterStaff.vue'),
+    meta: { requiresAuth: true, requiresStaff: true }
+  },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
@@ -76,8 +61,17 @@ router.beforeEach(async (to, from, next) => {
   if (requiresAuth && !currentUser) {
     next('/auth/login')
   } else if (requiresStaff) {
-    // Check if user is staff (implement this logic)
-    next()
+    if (!currentUser) {
+      next('/auth/login')
+    } else {
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid))
+      const userData = userDoc.data()
+      if (!userData || userData.userType !== 'staff') {
+        next('/')
+      } else {
+        next()
+      }
+    }
   } else {
     next()
   }

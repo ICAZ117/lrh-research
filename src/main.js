@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { useThemeStore } from './stores/theme'
+import { useAuthStore } from './stores/auth'
 import App from './App.vue'
 import router from './router'
 
@@ -28,6 +29,9 @@ app.use(pinia);
 
 const themeStore = useThemeStore();
 themeStore.initTheme();
+
+const authStore = useAuthStore()
+authStore.init();
 
 app.use(router);
 app.use(PrimeVue, {

@@ -24,12 +24,14 @@ const routes = [
   {
     path: '/auth/login',
     name: 'Login',
-    component: () => import('../views/auth/Login.vue')
+    component: () => import('../views/auth/Login.vue'),
+    meta: { requiresNoAuth: true }
   },
   {
     path: '/auth/register',
     name: 'Register',
-    component: () => import('../views/auth/Register.vue')
+    component: () => import('../views/auth/Register.vue'),
+    meta: { requiresNoAuth: true }
   },
   {
     path: '/auth/register-staff',
@@ -56,11 +58,14 @@ router.beforeEach(async (to, from, next) => {
   const auth = getAuth()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresStaff = to.matched.some(record => record.meta.requiresStaff)
+  const requiresNoAuth = to.matched.some(record => record.meta.requiresNoAuth)
   const currentUser = auth.currentUser
 
+  // redirect to login page if not logged in and requires auth
   if (requiresAuth && !currentUser) {
     next('/auth/login')
-  } else if (requiresStaff) {
+  }
+  else if (requiresStaff) {
     if (!currentUser) {
       next('/auth/login')
     } else {
@@ -72,7 +77,11 @@ router.beforeEach(async (to, from, next) => {
         next()
       }
     }
-  } else {
+  }
+  else if (requiresNoAuth && currentUser) {
+    next('/')
+  }
+  else {
     next()
   }
 })

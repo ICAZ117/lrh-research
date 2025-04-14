@@ -115,7 +115,7 @@ export default {
 				const result = await authStore.login(this.formData.email, this.formData.password)
 				if (result.success) {
 					toast.success('Successfully logged in!')
-					this.$router.push('/research-portal')
+					this.$router.push('/')
 				} else {
 					toast.error(result.error || 'Failed to login')
 					if (result.error.includes('email')) {

@@ -29,10 +29,9 @@ export const useAuthStore = defineStore('auth', {
     avatarColor: (state) => {
       if (!state.userData) return '#000000'
       const colors = [
-        '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e',
-        '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50',
-        '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6', '#f39c12',
-        '#d35400', '#c0392b', '#7f8c8d'
+        '#FFC107', '#FF9800', '#FF5722', '#B10B0B', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3',
+        '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39',
+        '#FFEB3B',
       ]
       const hash = state.userData.email.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0)
       return colors[hash % colors.length]

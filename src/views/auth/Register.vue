@@ -232,7 +232,7 @@ export default {
 
 				if (result.success) {
 					toast.success('Account created successfully!')
-					this.$router.push('/research-portal')
+					this.$router.push('/')
 				} else {
 					toast.error(result.error || 'Failed to create account')
 					if (result.error.includes('email')) {

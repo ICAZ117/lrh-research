@@ -56,7 +56,7 @@ export default {
 			showCursorEffect: false,
 			cursorX: 0,
 			cursorY: 0,
-		}
+		};
 	},
 	computed: {
 		effectStyles() {
@@ -64,36 +64,36 @@ export default {
 				width: `${this.size}px`,
 				height: `${this.size}px`,
 				filter: `blur(${this.blur}px)`,
-			}
+			};
 
 			if (this.color) {
-				styles.background = this.createGradient(this.color)
+				styles.background = this.createGradient(this.color);
 			}
 
-			return styles
+			return styles;
 		},
 	},
 	methods: {
 		handleMouseMove(event) {
-			const container = this.$refs.container
-			const rect = container.getBoundingClientRect()
+			const container = this.$refs.container;
+			const rect = container.getBoundingClientRect();
 
 			// Calculate cursor position relative to the container
-			this.cursorX = event.clientX - rect.left
-			this.cursorY = event.clientY - rect.top
+			this.cursorX = event.clientX - rect.left;
+			this.cursorY = event.clientY - rect.top;
 		},
 		handleMouseEnter() {
-			this.showCursorEffect = true
+			this.showCursorEffect = true;
 		},
 		handleMouseLeave() {
-			this.showCursorEffect = false
+			this.showCursorEffect = false;
 		},
 		createGradient(baseColor) {
 			// Custom gradient if color prop provided
-			return `radial-gradient(circle, ${baseColor} 0%, ${baseColor}99 50%, ${baseColor}33 70%, transparent 100%)`
+			return `radial-gradient(circle, ${baseColor} 0%, ${baseColor}99 50%, ${baseColor}33 70%, transparent 100%)`;
 		},
 	},
-}
+};
 </script>
 
 <style lang="scss" scoped>

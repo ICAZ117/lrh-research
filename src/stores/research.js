@@ -9,6 +9,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  addDoc,
   arrayUnion
 } from 'firebase/firestore'
 
@@ -107,7 +108,6 @@ export const useResearchStore = defineStore('research', {
     async createProject(projectData) {
       this.loading = true
       try {
-        const projectId = Math.random().toString(36).substring(2, 8).toUpperCase()
         const assignedUsers = [
           projectData.principalInvestigator,
           projectData.coordinator,
@@ -115,13 +115,15 @@ export const useResearchStore = defineStore('research', {
           ...projectData.researchers
         ]
 
-        const projectRef = doc(db, 'projects', projectId)
-        await setDoc(projectRef, {
+        const projectsCollectionRef = collection(db, 'projects');
+        const newProjectRef = await addDoc(projectsCollectionRef, {
           ...projectData,
           assignedUsers: [...new Set(assignedUsers)],
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        })
+          updatedAt: new Date().toISOString(),
+        });
+
+        const projectId = newProjectRef.id; // Get the auto-generated ID
 
         for (const userId of assignedUsers) {
           const userRef = doc(db, 'users', userId)

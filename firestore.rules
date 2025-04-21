@@ -25,12 +25,18 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isResearchStaff() || isSuperUser());
 
+      // Allow delete if user is deleting their own doc
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+
       allow write: if isSignedIn() && (
         isSuperUser() ||
         isResearchStaff() ||
-        isCreatingOrUpdatingSelfProperly(userId)
+        (request.auth.uid == userId &&
+         (!("userType" in request.resource.data) ||
+          request.resource.data.userType == "user"))
       );
     }
+
 
     match /{collection}/{document} {
       allow read: if true;

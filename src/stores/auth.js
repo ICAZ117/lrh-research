@@ -5,9 +5,12 @@ import {
   signOut,
   updatePassword,
   sendEmailVerification,
-  onAuthStateChanged
+  onAuthStateChanged,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 
 export const useAuthStore = defineStore('auth', {
@@ -48,15 +51,19 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async init() {
-      onAuthStateChanged(auth, async (user) => {
-        this.user = user
-        if (user) {
-          await this.fetchUserData()
-        } else {
-          this.userData = null
-        }
-        this.initialized = true
-      })
+      return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+          this.user = user;
+          if (user) {
+            await this.fetchUserData();
+          } else {
+            this.userData = null;
+          }
+          this.initialized = true;
+          unsubscribe(); // Detach the listener after the first call
+          resolve();
+        });
+      });
     },
 
     async login(email, password) {
@@ -235,6 +242,38 @@ export const useAuthStore = defineStore('auth', {
           error: 'Failed to send verification email. Please try again later.'
         }
       }
-    }
+    },
+
+    async deleteAccount({ email, password }) {
+      try {
+        const user = auth.currentUser;
+
+        if (!user) {
+          return { success: false, error: 'You must be logged in to delete your account' };
+        }
+
+        // Re-authenticate user before deletion
+        const credential = EmailAuthProvider.credential(email, password);
+        await reauthenticateWithCredential(user, credential);
+
+        // Delete user document from Firestore
+        await deleteDoc(doc(db, 'users', user.uid));
+
+        // Delete Firebase Auth user
+        await deleteUser(user);
+
+        // Logout from the store
+        this.logout();
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        return {
+          success: false,
+          error: error.message || 'Failed to delete account',
+          code: error.code
+        };
+      }
+    },
   }
 })

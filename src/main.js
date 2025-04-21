@@ -39,6 +39,9 @@ app.use(PrimeVue, {
     preset: Aura
   }
 });
-app.use(Toast);
+
+app.use(Toast, {
+  position: "bottom-right"
+});
 
 app.mount('#app');

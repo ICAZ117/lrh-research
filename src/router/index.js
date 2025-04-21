@@ -3,6 +3,8 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import Home from '../views/Home.vue'
+import { useAuthStore } from '../stores/auth'
+import { useResearchStore } from '@/stores/research'
 
 const routes = [
   {
@@ -15,11 +17,6 @@ const routes = [
     name: 'Account',
     component: () => import('../views/Account.vue'),
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/codebook',
-    name: 'Codebook',
-    component: () => import('../views/Codebook.vue')
   },
   {
     path: '/auth/login',
@@ -38,6 +35,55 @@ const routes = [
     name: 'RegisterStaff',
     component: () => import('../views/auth/RegisterStaff.vue'),
     meta: { requiresAuth: true, requiresStaff: true }
+  },
+  {
+    path: '/research-portal',
+    name: 'ResearchPortal',
+    component: () => import('../views/research/Dashboard.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/research-portal/new',
+    name: 'NewProject',
+    component: () => import('../views/research/NewProject.vue'),
+    meta: { requiresAuth: true, requiresStaff: true }
+  },
+  {
+    path: '/research-portal/:id',
+    name: 'ProjectDetails',
+    component: () => import('../views/research/ProjectDetails.vue'),
+    meta: { requiresAuth: true },
+    beforeEnter: async (to, from, next) => {
+      const authStore = useAuthStore()
+      const researchStore = useResearchStore()
+
+      if (!authStore.isAuthenticated) {
+        next('/auth/login')
+        return
+      }
+
+      try {
+        await researchStore.fetchProject(to.params.id)
+
+        if (!researchStore.currentProject) {
+          next('/research-portal')
+          return
+        }
+
+        if (authStore.isStaff || researchStore.currentProject.assignedUsers.includes(authStore.user.uid)) {
+          next()
+        } else {
+          next('/research-portal')
+        }
+      } catch (error) {
+        next('/research-portal')
+      }
+    }
+  },
+  {
+    path: '/codebook',
+    name: 'Codebook',
+    component: () => import('../views/Codebook.vue')
   },
   {
     path: '/dev/DBManager',

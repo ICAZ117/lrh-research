@@ -88,6 +88,11 @@
 										<i class="fas fa-user-plus me-2"></i>Register Staff
 									</router-link>
 								</template>
+								<template v-if="isDev">
+									<router-link class="dropdown-item" to="/dev/DBManager">
+										<i class="fa-solid fa-database me-2"></i>DB Manager
+									</router-link>
+								</template>
 								<div class="dropdown-divider"></div>
 								<button class="dropdown-item" @click="handleLogout">
 									<i class="fas fa-sign-out-alt me-2"></i>Logout
@@ -130,6 +135,11 @@
 								<template v-if="isStaff">
 									<router-link class="mobile-menu-item" to="/auth/register-staff">
 										<i class="fas fa-user-plus me-2"></i>Register Staff
+									</router-link>
+								</template>
+								<template v-if="isDev">
+									<router-link class="dropdown-item" to="/dev/DBManager">
+										<i class="fa-solid fa-database me-2"></i>DB Manager
 									</router-link>
 								</template>
 								<button class="mobile-menu-item logout" @click="handleLogout">
@@ -185,6 +195,7 @@ export default {
 			'userInitials',
 			'avatarColor',
 			'userData',
+			'isDev',
 		]),
 	},
 	methods: {

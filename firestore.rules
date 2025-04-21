@@ -2,26 +2,39 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Function to check if user is authenticated
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Function to check if the user is research staff
+    function isSuperUser() {
+      return isSignedIn() && request.auth.uid == "rRcvNxC7lgaTgqkXd6UWqyJ2KuQ2";
+    }
+
     function isResearchStaff() {
       return isSignedIn() &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == "staff";
     }
 
-    // Rules for the `users` collection
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && (request.auth.uid == userId || isResearchStaff());
+    // Prevent users from elevating their own privileges
+    function isCreatingOrUpdatingSelfProperly(userId) {
+      return request.auth.uid == userId &&
+             (!("userType" in request.resource.data) ||
+              request.resource.data.userType == "user");
     }
 
-    // Rules for all other collections
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isResearchStaff() || isSuperUser());
+
+      allow write: if isSignedIn() && (
+        isSuperUser() ||
+        isResearchStaff() ||
+        isCreatingOrUpdatingSelfProperly(userId)
+      );
+    }
+
     match /{collection}/{document} {
       allow read: if true;
-      allow write: if isResearchStaff();
+      allow write: if isResearchStaff() || isSuperUser();
     }
   }
 }

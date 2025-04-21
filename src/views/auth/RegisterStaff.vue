@@ -125,10 +125,10 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
-import { useAuthStore } from '@/stores/auth'
-import { useThemeStore } from '@/stores/theme'
-import { useToast } from 'vue-toastification'
+import { mapState } from 'pinia';
+import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
+import { useToast } from 'vue-toastification';
 
 export default {
 	name: 'RegisterStaff',
@@ -151,14 +151,14 @@ export default {
 				confirmPassword: '',
 			},
 			loading: false,
-		}
+		};
 	},
 	computed: {
 		...mapState(useThemeStore, ['isDarkMode']),
 	},
 	methods: {
 		validateForm() {
-			let isValid = true
+			let isValid = true;
 			this.errors = {
 				title: '',
 				firstName: '',
@@ -166,89 +166,90 @@ export default {
 				email: '',
 				password: '',
 				confirmPassword: '',
-			}
+			};
 
 			if (!this.formData.title) {
-				this.errors.title = 'Please select a title'
-				isValid = false
+				this.errors.title = 'Please select a title';
+				isValid = false;
 			}
 
 			if (!this.formData.firstName) {
-				this.errors.firstName = 'First name is required'
-				isValid = false
+				this.errors.firstName = 'First name is required';
+				isValid = false;
 			}
 
 			if (!this.formData.lastName) {
-				this.errors.lastName = 'Last name is required'
-				isValid = false
+				this.errors.lastName = 'Last name is required';
+				isValid = false;
 			}
 
 			if (!this.formData.email) {
-				this.errors.email = 'Email is required'
-				isValid = false
+				this.errors.email = 'Email is required';
+				isValid = false;
 			}
 
 			if (!this.formData.password) {
-				this.errors.password = 'Password is required'
-				isValid = false
+				this.errors.password = 'Password is required';
+				isValid = false;
 			} else if (this.formData.password.length < 8) {
-				this.errors.password = 'Password must be at least 8 characters long'
-				isValid = false
+				this.errors.password = 'Password must be at least 8 characters long';
+				isValid = false;
 			}
 
 			if (this.formData.password !== this.formData.confirmPassword) {
-				this.errors.confirmPassword = 'Passwords do not match'
-				isValid = false
+				this.errors.confirmPassword = 'Passwords do not match';
+				isValid = false;
 			}
 
-			return isValid
+			return isValid;
 		},
 		async handleRegister() {
-			if (!this.validateForm()) return
+			if (!this.validateForm()) return;
 
-			this.loading = true
+			this.loading = true;
 			try {
-				const authStore = useAuthStore()
-				const toast = useToast()
+				const authStore = useAuthStore();
+				const toast = useToast();
 
 				const userData = {
 					title: this.formData.title,
 					firstName: this.formData.firstName,
 					lastName: this.formData.lastName,
-				}
+				};
 
 				const result = await authStore.registerStaffMember(
 					this.formData.email,
 					this.formData.password,
 					userData
-				)
+				);
 
 				if (result.success) {
-					toast.success('Staff account created successfully!')
-					this.$router.push('/research-portal')
+					toast.success('Staff account created successfully!');
+					const redirectPath = this.$route.query.redirect || '/';
+					this.$router.push(redirectPath);
 				} else {
-					toast.error(result.error || 'Failed to create staff account')
+					toast.error(result.error || 'Failed to create staff account');
 					if (result.error.includes('email')) {
-						this.errors.email = result.error
+						this.errors.email = result.error;
 					} else if (result.error.includes('password')) {
-						this.errors.password = result.error
+						this.errors.password = result.error;
 					}
 				}
 			} catch (error) {
-				useToast().error('An unexpected error occurred')
+				useToast().error('An unexpected error occurred');
 			} finally {
-				this.loading = false
+				this.loading = false;
 			}
 		},
 	},
 	created() {
-		const authStore = useAuthStore()
+		const authStore = useAuthStore();
 		if (!authStore.isStaff) {
-			useToast().error('Unauthorized: Only staff members can access this page')
-			this.$router.push('/')
+			useToast().error('Unauthorized: Only staff members can access this page');
+			this.$router.push('/');
 		}
 	},
-}
+};
 </script>
 
 <style lang="scss" scoped>

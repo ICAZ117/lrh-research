@@ -35,11 +35,19 @@ export const useAuthStore = defineStore('auth', {
       ]
       const hash = state.userData.email.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0)
       return colors[hash % colors.length]
-    }
+    },
+    fbaUser: (state) => {
+      if (!state.user) return null
+      return state.user
+    },
+    isDev: (state) => {
+      if (!state.user) return false
+      return state.user.uid === 'rRcvNxC7lgaTgqkXd6UWqyJ2KuQ2'
+    },
   },
 
   actions: {
-    init() {
+    async init() {
       onAuthStateChanged(auth, async (user) => {
         this.user = user
         if (user) {

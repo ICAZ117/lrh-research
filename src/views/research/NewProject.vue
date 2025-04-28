@@ -1,6 +1,6 @@
 <template>
-	<div class="new-project min-vh-100 py-5 mt-5" :class="{ dark: isDarkMode }">
-		<div class="container">
+	<div class="new-project min-vh-100" :class="{ dark: isDarkMode }">
+		<div class="container pb-5">
 			<h1 class="mb-4">Create New Research Project</h1>
 
 			<div class="card">
@@ -49,63 +49,58 @@
 
 						<div class="mb-3">
 							<label class="form-label">Principal Investigator</label>
-							<Dropdown
+							<SearchDropdown
 								v-model="formData.principalInvestigator"
 								:options="userOptions"
-								optionLabel="name"
-								optionValue="id"
-								placeholder="Select Principal Investigator"
-								:filter="true"
-								class="w-100"
-								:class="{ 'is-invalid': errors.principalInvestigator }"
+								placeholder="Search for Principal Investigator"
+								:is-invalid="!!errors.principalInvestigator"
+								:error-message="errors.principalInvestigator"
+								:disabled-options="getDisabledOptionsFor('principalInvestigator')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.principalInvestigator }}</div>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label">Other Researchers</label>
-							<MultiSelect
+							<SearchDropdown
 								v-model="formData.researchers"
 								:options="userOptions"
-								optionLabel="name"
-								optionValue="id"
-								placeholder="Select Researchers"
-								:filter="true"
-								class="w-100"
-								:class="{ 'is-invalid': errors.researchers }"
-								display="chip"
+								placeholder="Search for Researchers"
+								:multiple="true"
+								:is-invalid="!!errors.researchers"
+								:error-message="errors.researchers"
+								:disabled-options="getDisabledOptionsFor('researchers')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.researchers }}</div>
+							<small class="form-text text-muted"
+								>You can select multiple researchers</small
+							>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label">Clinical Research Coordinator</label>
-							<Dropdown
+							<SearchDropdown
 								v-model="formData.coordinator"
 								:options="userOptions"
-								optionLabel="name"
-								optionValue="id"
-								placeholder="Select Coordinator"
-								:filter="true"
-								class="w-100"
-								:class="{ 'is-invalid': errors.coordinator }"
+								placeholder="Search for Coordinator"
+								:is-invalid="!!errors.coordinator"
+								:error-message="errors.coordinator"
+								:disabled-options="getDisabledOptionsFor('coordinator')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.coordinator }}</div>
 						</div>
 
 						<div class="mb-4">
 							<label class="form-label">Statistician</label>
-							<Dropdown
+							<SearchDropdown
 								v-model="formData.statistician"
 								:options="userOptions"
-								optionLabel="name"
-								optionValue="id"
-								placeholder="Select Statistician"
-								:filter="true"
-								class="w-100"
-								:class="{ 'is-invalid': errors.statistician }"
+								placeholder="Search for Statistician"
+								:is-invalid="!!errors.statistician"
+								:error-message="errors.statistician"
+								:disabled-options="getDisabledOptionsFor('statistician')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.statistician }}</div>
 						</div>
 
 						<div class="d-flex gap-2">
@@ -132,14 +127,12 @@ import { mapState, mapActions } from 'pinia';
 import { useResearchStore } from '@/stores/research';
 import { useThemeStore } from '@/stores/theme';
 import { useToast } from 'vue-toastification';
-import Dropdown from 'primevue/dropdown';
-import MultiSelect from 'primevue/multiselect';
+import SearchDropdown from '@/components/SearchDropdown.vue';
 
 export default {
 	name: 'NewProject',
 	components: {
-		Dropdown,
-		MultiSelect,
+		SearchDropdown,
 	},
 	data() {
 		return {
@@ -175,6 +168,7 @@ export default {
 	},
 	methods: {
 		...mapActions(useResearchStore, ['fetchUsers', 'createProject']),
+
 		validateForm() {
 			let isValid = true;
 			this.errors = {
@@ -217,8 +211,38 @@ export default {
 				isValid = false;
 			}
 
+			// Additional validation to ensure roles don't conflict
+			if (
+				this.formData.coordinator === this.formData.statistician &&
+				this.formData.coordinator
+			) {
+				this.errors.coordinator = 'Coordinator cannot be the same as Statistician';
+				this.errors.statistician = 'Statistician cannot be the same as Coordinator';
+				isValid = false;
+			}
+
+			// Validate that researchers don't contain unique roles
+			if (Array.isArray(this.formData.researchers) && this.formData.researchers.length > 0) {
+				const uniqueRoleIds = [
+					this.formData.principalInvestigator,
+					this.formData.coordinator,
+					this.formData.statistician,
+				].filter((id) => id); // Filter out empty values
+
+				const conflictingResearchers = this.formData.researchers.filter((id) =>
+					uniqueRoleIds.includes(id)
+				);
+
+				if (conflictingResearchers.length > 0) {
+					this.errors.researchers =
+						'Other Researchers cannot include users selected for PI, CRC, or Statistician roles';
+					isValid = false;
+				}
+			}
+
 			return isValid;
 		},
+
 		async handleSubmit() {
 			if (!this.validateForm()) return;
 
@@ -230,6 +254,75 @@ export default {
 				useToast().error('Failed to create project');
 			}
 		},
+
+		getDisabledOptionsFor(fieldName) {
+			const disabledOptions = [];
+
+			// Apply rules based on what field we're getting disabled options for
+			switch (fieldName) {
+				case 'principalInvestigator':
+					// PI cannot be in the researchers array
+					if (Array.isArray(this.formData.researchers)) {
+						disabledOptions.push(...this.formData.researchers);
+					}
+					break;
+
+				case 'coordinator':
+					// CRC cannot be the statistician
+					if (this.formData.statistician) {
+						disabledOptions.push(this.formData.statistician);
+					}
+					// CRC cannot be in researchers
+					if (Array.isArray(this.formData.researchers)) {
+						disabledOptions.push(...this.formData.researchers);
+					}
+					break;
+
+				case 'statistician':
+					// Statistician cannot be the CRC
+					if (this.formData.coordinator) {
+						disabledOptions.push(this.formData.coordinator);
+					}
+					// Statistician cannot be in researchers
+					if (Array.isArray(this.formData.researchers)) {
+						disabledOptions.push(...this.formData.researchers);
+					}
+					break;
+
+				case 'researchers':
+					// Researchers cannot include PI, CRC, or Statistician
+					if (this.formData.principalInvestigator) {
+						disabledOptions.push(this.formData.principalInvestigator);
+					}
+					if (this.formData.coordinator) {
+						disabledOptions.push(this.formData.coordinator);
+					}
+					if (this.formData.statistician) {
+						disabledOptions.push(this.formData.statistician);
+					}
+					break;
+			}
+
+			return disabledOptions;
+		},
+
+		updateRoleSelections() {
+			// When a role changes, this method is called
+			// The logic is already handled by the getDisabledOptionsFor method
+			// This is a hook for any additional logic you might want to add
+
+			// Clear any existing validation errors for the fields
+			this.errors = {
+				...this.errors,
+				principalInvestigator: '',
+				researchers: '',
+				coordinator: '',
+				statistician: '',
+			};
+
+			// Optionally, validate the form whenever selections change
+			// this.validateForm();
+		},
 	},
 	async created() {
 		await this.fetchUsers();
@@ -239,6 +332,8 @@ export default {
 
 <style lang="scss" scoped>
 .new-project {
+	padding-top: calc(2rem + var(--navbar-height));
+
 	&.dark {
 		background-color: #1a1a1a;
 		color: #ffffff;
@@ -258,64 +353,11 @@ export default {
 				background-color: #2c3034;
 				color: #ffffff;
 			}
-		}
 
-		:deep(.p-dropdown),
-		:deep(.p-multiselect) {
-			background-color: #212529;
-			border-color: #444;
-
-			.p-dropdown-label,
-			.p-multiselect-label {
+			option {
+				background-color: #212529;
 				color: #ffffff;
 			}
-
-			.p-dropdown-trigger,
-			.p-multiselect-trigger {
-				color: #ffffff;
-			}
-		}
-
-		:deep(.p-dropdown-panel),
-		:deep(.p-multiselect-panel) {
-			background-color: #2c3034;
-			border-color: #444;
-
-			.p-dropdown-item,
-			.p-multiselect-item {
-				color: #ffffff;
-
-				&:hover {
-					background-color: #444;
-				}
-
-				&.p-highlight {
-					background-color: var(--bs-primary);
-				}
-			}
-		}
-	}
-}
-
-:deep(.p-dropdown),
-:deep(.p-multiselect) {
-	width: 100%;
-
-	.p-dropdown-label,
-	.p-multiselect-label {
-		padding: 0.75rem 1rem;
-	}
-}
-
-:deep(.p-dropdown-panel),
-:deep(.p-multiselect-panel) {
-	.p-dropdown-filter-container,
-	.p-multiselect-filter-container {
-		padding: 0.5rem;
-
-		input {
-			width: 100%;
-			padding: 0.5rem;
 		}
 	}
 }

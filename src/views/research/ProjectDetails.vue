@@ -1,6 +1,6 @@
 <template>
-	<div class="project-details min-vh-100 py-5 mt-5" :class="{ dark: isDarkMode }">
-		<div class="container">
+	<div class="project-details min-vh-100" :class="{ dark: isDarkMode }">
+		<div class="container pb-5">
 			<div v-if="loading" class="text-center py-5">
 				<div class="spinner-border text-primary" role="status">
 					<span class="visually-hidden">Loading...</span>
@@ -123,6 +123,8 @@ export default {
 
 <style lang="scss" scoped>
 .project-details {
+	padding-top: calc(2rem + var(--navbar-height));
+
 	&.dark {
 		background-color: #1a1a1a;
 		color: #ffffff;

@@ -37,9 +37,8 @@
 										<i class="fas fa-chevron-down ms-2"></i>
 
 										<div
-											v-if="activeDropdown === project.id"
+											v-show="activeDropdown === project.id"
 											class="status-dropdown"
-											v-click-outside="closeDropdown"
 										>
 											<div
 												v-for="status in statusOptions"
@@ -88,6 +87,7 @@
 					</div>
 				</div>
 
+				<!-- My Assigned Projects Section -->
 				<h2 class="h4 mb-3">My Assigned Projects</h2>
 				<div class="row g-4">
 					<div v-if="myProjects.length === 0" class="col-12">
@@ -115,9 +115,8 @@
 										<i class="fas fa-chevron-down ms-2"></i>
 
 										<div
-											v-if="activeDropdown === project.id"
+											v-show="activeDropdown === project.id"
 											class="status-dropdown"
-											v-click-outside="closeDropdown"
 										>
 											<div
 												v-for="status in statusOptions"
@@ -223,6 +222,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useResearchStore } from '@/stores/research';
 import { useThemeStore } from '@/stores/theme';
 import { useToast } from 'vue-toastification';
+import { onMounted, onBeforeUnmount } from 'vue';
 
 export default {
 	name: 'ResearchPortal',
@@ -237,23 +237,42 @@ export default {
 		...mapState(useResearchStore, ['allProjects', 'myProjects']),
 		...mapState(useThemeStore, ['isDarkMode']),
 	},
-	directives: {
-		clickOutside: {
-			mounted(el, binding) {
-				el._clickOutside = (event) => {
-					if (!(el === event.target || el.contains(event.target))) {
-						binding.value(event);
-					}
-				};
-				document.addEventListener('click', el._clickOutside);
-			},
-			unmounted(el) {
-				document.removeEventListener('click', el._clickOutside);
-			},
-		},
+	setup() {
+		// Global click handler for closing dropdowns
+		const handleOutsideClick = (event) => {
+			const dropdowns = document.querySelectorAll('.status-badge');
+			let clickedOutside = true;
+
+			dropdowns.forEach((dropdown) => {
+				if (dropdown.contains(event.target)) {
+					clickedOutside = false;
+				}
+			});
+
+			if (clickedOutside) {
+				// Use the store to access the component instance
+				const store = useResearchStore();
+				if (store.activeDropdown !== null) {
+					store.setActiveDropdown(null);
+				}
+			}
+		};
+
+		onMounted(() => {
+			document.addEventListener('click', handleOutsideClick);
+		});
+
+		onBeforeUnmount(() => {
+			document.removeEventListener('click', handleOutsideClick);
+		});
 	},
 	methods: {
-		...mapActions(useResearchStore, ['fetchProjects', 'getUserName', 'updateProjectStatus']),
+		...mapActions(useResearchStore, [
+			'fetchProjects',
+			'getUserName',
+			'updateProjectStatus',
+			'setActiveDropdown',
+		]),
 		getStatusClass(status) {
 			const classes = {
 				'In Progress': 'status-primary',
@@ -265,17 +284,20 @@ export default {
 		},
 		toggleStatusDropdown(projectId) {
 			if (this.isStaff) {
+				// Prevent event bubbling
+				event.stopPropagation();
 				this.activeDropdown = this.activeDropdown === projectId ? null : projectId;
+				// Also update the store value
+				this.setActiveDropdown(this.activeDropdown);
 			}
-		},
-		closeDropdown() {
-			this.activeDropdown = null;
 		},
 		async handleStatusUpdate(projectId, newStatus) {
 			try {
 				await this.updateProjectStatus(projectId, newStatus);
 				useToast().success('Project status updated successfully');
-				this.closeDropdown();
+				this.activeDropdown = null;
+				// Also update the store value
+				this.setActiveDropdown(null);
 			} catch (error) {
 				useToast().error('Failed to update project status');
 			}
@@ -303,6 +325,18 @@ export default {
 		.status-dropdown {
 			background-color: #2c3034;
 			border-color: #444;
+
+			.status-option {
+				color: #ffffff;
+
+				&:hover {
+					background-color: rgba(255, 255, 255, 0.1);
+				}
+
+				&.active {
+					background-color: rgba(255, 255, 255, 0.2);
+				}
+			}
 		}
 	}
 }
@@ -349,15 +383,15 @@ export default {
 
 .status-dropdown {
 	position: absolute;
-	top: 100%;
+	top: calc(100% + 4px);
 	left: 0;
-	right: 0;
-	margin-top: 4px;
+	min-width: 150px;
 	background: white;
 	border: 1px solid #dee2e6;
 	border-radius: 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 	z-index: 1000;
+	overflow: hidden;
 }
 
 .status-option {

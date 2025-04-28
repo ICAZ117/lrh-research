@@ -11,7 +11,8 @@ import {
   updateDoc,
   addDoc,
   arrayUnion,
-  deleteDoc
+  deleteDoc,
+  arrayRemove
 } from 'firebase/firestore'
 
 export const useResearchStore = defineStore('research', {
@@ -21,7 +22,8 @@ export const useResearchStore = defineStore('research', {
     currentProject: null,
     allUsers: [],
     userNames: {},
-    loading: false
+    loading: false,
+    activeDropdown: null,
   }),
 
   actions: {
@@ -137,10 +139,45 @@ export const useResearchStore = defineStore('research', {
       this.loading = true
       try {
         const projectRef = doc(db, 'projects', projectId)
+        const projectSnapshot = await getDoc(projectRef)
+        const oldAssignedUsers = projectSnapshot.data()?.assignedUsers || []
+
+        const newAssignedUsers = [
+          projectData.principalInvestigator,
+          projectData.coordinator,
+          projectData.statistician,
+          ...projectData.researchers,
+        ]
+        const uniqueNewAssignedUsers = [...new Set(newAssignedUsers)]
+
         await updateDoc(projectRef, {
           ...projectData,
-          updatedAt: new Date().toISOString()
+          assignedUsers: uniqueNewAssignedUsers,
+          updatedAt: new Date().toISOString(),
         })
+
+        // Identify users removed from the project
+        const removedUsers = oldAssignedUsers.filter(userId => !uniqueNewAssignedUsers.includes(userId))
+
+        // Update the projects array for removed users
+        for (const userId of removedUsers) {
+          const userRef = doc(db, 'users', userId)
+          await updateDoc(userRef, {
+            projects: arrayRemove(projectId),
+          })
+        }
+
+        // Identify newly added users
+        const addedUsers = uniqueNewAssignedUsers.filter(userId => !oldAssignedUsers.includes(userId))
+
+        // Update the projects array for newly added users
+        for (const userId of addedUsers) {
+          const userRef = doc(db, 'users', userId)
+          await updateDoc(userRef, {
+            projects: arrayUnion(projectId),
+          })
+        }
+
         return true
       } catch (error) {
         console.error('Error updating project:', error)
@@ -232,6 +269,10 @@ export const useResearchStore = defineStore('research', {
 
     getUserName(userId) {
       return this.userNames[userId] || 'Loading...'
-    }
+    },
+
+    setActiveDropdown(projectId) {
+      this.activeDropdown = projectId;
+    },
   }
 })

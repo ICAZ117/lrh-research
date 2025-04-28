@@ -1,16 +1,15 @@
-<!-- eslint-disable vue/no-reserved-component-names -->
-<!-- eslint-disable vue/no-reserved-component-names -->
 <template>
-	<div class="edit-project min-vh-100 py-5 mt-5" :class="{ dark: isDarkMode }">
-		<div class="container">
-			<div class="d-flex justify-content-between align-items-center mb-4">
-				<h1>Edit Research Project</h1>
-				<button class="btn btn-danger" @click="showDeleteConfirmation = true">
-					<i class="fas fa-trash me-2"></i>Delete Project
-				</button>
+	<div class="edit-project min-vh-100" :class="{ dark: isDarkMode }">
+		<div class="container pb-5">
+			<h1 class="mb-4">Edit Research Project</h1>
+
+			<div v-if="loading" class="d-flex justify-content-center my-5">
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
 			</div>
 
-			<div class="card">
+			<div v-else class="card">
 				<div class="card-body">
 					<form @submit.prevent="handleSubmit">
 						<div class="mb-3">
@@ -56,66 +55,58 @@
 
 						<div class="mb-3">
 							<label class="form-label">Principal Investigator</label>
-							<Dropdown
+							<SearchDropdown
 								v-model="formData.principalInvestigator"
-								:options="allUsers"
-								optionLabel="fullName"
-								optionValue="id"
-								:filter="true"
-								filterPlaceholder="Search users..."
-								placeholder="Select Principal Investigator"
-								class="w-100"
-								:class="{ 'is-invalid': errors.principalInvestigator }"
+								:options="userOptions"
+								placeholder="Search for Principal Investigator"
+								:is-invalid="!!errors.principalInvestigator"
+								:error-message="errors.principalInvestigator"
+								:disabled-options="getDisabledOptionsFor('principalInvestigator')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.principalInvestigator }}</div>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label">Other Researchers</label>
-							<MultiSelect
+							<SearchDropdown
 								v-model="formData.researchers"
-								:options="allUsers"
-								optionLabel="fullName"
-								optionValue="id"
-								:filter="true"
-								filterPlaceholder="Search users..."
-								placeholder="Select Researchers"
-								class="w-100"
-								:class="{ 'is-invalid': errors.researchers }"
+								:options="userOptions"
+								placeholder="Search for Researchers"
+								:multiple="true"
+								:is-invalid="!!errors.researchers"
+								:error-message="errors.researchers"
+								:disabled-options="getDisabledOptionsFor('researchers')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.researchers }}</div>
+							<small class="form-text text-muted"
+								>You can select multiple researchers</small
+							>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label">Clinical Research Coordinator</label>
-							<Dropdown
+							<SearchDropdown
 								v-model="formData.coordinator"
-								:options="allUsers"
-								optionLabel="fullName"
-								optionValue="id"
-								:filter="true"
-								filterPlaceholder="Search users..."
-								placeholder="Select Coordinator"
-								class="w-100"
-								:class="{ 'is-invalid': errors.coordinator }"
+								:options="userOptions"
+								placeholder="Search for Coordinator"
+								:is-invalid="!!errors.coordinator"
+								:error-message="errors.coordinator"
+								:disabled-options="getDisabledOptionsFor('coordinator')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.coordinator }}</div>
 						</div>
 
 						<div class="mb-4">
 							<label class="form-label">Statistician</label>
-							<Dropdown
+							<SearchDropdown
 								v-model="formData.statistician"
-								:options="allUsers"
-								optionLabel="fullName"
-								optionValue="id"
-								:filter="true"
-								filterPlaceholder="Search users..."
-								placeholder="Select Statistician"
-								class="w-100"
-								:class="{ 'is-invalid': errors.statistician }"
+								:options="userOptions"
+								placeholder="Search for Statistician"
+								:is-invalid="!!errors.statistician"
+								:error-message="errors.statistician"
+								:disabled-options="getDisabledOptionsFor('statistician')"
+								@update:modelValue="updateRoleSelections"
 							/>
-							<div class="invalid-feedback">{{ errors.statistician }}</div>
 						</div>
 
 						<div class="d-flex gap-2">
@@ -126,7 +117,7 @@
 								></span>
 								Update Project
 							</button>
-							<router-link to="/research-portal" class="btn btn-outline-secondary">
+							<router-link :to="`/research-portal`" class="btn btn-outline-secondary">
 								Cancel
 							</router-link>
 						</div>
@@ -134,58 +125,24 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- Delete Confirmation Modal -->
-		<Dialog
-			v-model:visible="showDeleteConfirmation"
-			header="Confirm Deletion"
-			:modal="true"
-			:closable="false"
-			class="delete-modal"
-		>
-			<p class="mb-4">
-				Are you sure you want to delete this project? This action cannot be undone.
-			</p>
-			<template #footer>
-				<Button
-					label="Cancel"
-					class="p-button-text"
-					@click="showDeleteConfirmation = false"
-				/>
-				<Button
-					label="Delete"
-					class="p-button-danger"
-					@click="handleDelete"
-					:loading="loading"
-				/>
-			</template>
-		</Dialog>
 	</div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'pinia';
-import { useAuthStore } from '@/stores/auth';
 import { useResearchStore } from '@/stores/research';
 import { useThemeStore } from '@/stores/theme';
 import { useToast } from 'vue-toastification';
-import Dropdown from 'primevue/dropdown';
-import MultiSelect from 'primevue/multiselect';
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
+import SearchDropdown from '@/components/SearchDropdown.vue';
 
 export default {
 	name: 'EditProject',
 	components: {
-		Dropdown,
-		MultiSelect,
-		// eslint-disable-next-line vue/no-reserved-component-names
-		Dialog,
-		// eslint-disable-next-line vue/no-reserved-component-names
-		Button,
+		SearchDropdown,
 	},
 	data() {
 		return {
+			projectId: '',
 			formData: {
 				title: '',
 				description: '',
@@ -204,20 +161,21 @@ export default {
 				coordinator: '',
 				statistician: '',
 			},
-			showDeleteConfirmation: false,
 		};
 	},
 	computed: {
-		...mapState(useResearchStore, ['currentProject', 'allUsers', 'loading']),
+		...mapState(useResearchStore, ['allUsers', 'loading', 'currentProject']),
 		...mapState(useThemeStore, ['isDarkMode']),
+		userOptions() {
+			return this.allUsers.map((user) => ({
+				id: user.id,
+				name: `${user.title} ${user.firstName} ${user.lastName}`,
+			}));
+		},
 	},
 	methods: {
-		...mapActions(useResearchStore, [
-			'fetchProject',
-			'fetchUsers',
-			'updateProject',
-			'deleteProject',
-		]),
+		...mapActions(useResearchStore, ['fetchUsers', 'fetchProject', 'updateProject']),
+
 		validateForm() {
 			let isValid = true;
 			this.errors = {
@@ -260,44 +218,180 @@ export default {
 				isValid = false;
 			}
 
+			// Additional validation to ensure roles don't conflict
+			if (
+				this.formData.coordinator === this.formData.statistician &&
+				this.formData.coordinator
+			) {
+				this.errors.coordinator = 'Coordinator cannot be the same as Statistician';
+				this.errors.statistician = 'Statistician cannot be the same as Coordinator';
+				isValid = false;
+			}
+
+			// Validate that researchers don't contain unique roles
+			if (Array.isArray(this.formData.researchers) && this.formData.researchers.length > 0) {
+				const uniqueRoleIds = [
+					this.formData.principalInvestigator,
+					this.formData.coordinator,
+					this.formData.statistician,
+				].filter((id) => id); // Filter out empty values
+
+				const conflictingResearchers = this.formData.researchers.filter((id) =>
+					uniqueRoleIds.includes(id)
+				);
+
+				if (conflictingResearchers.length > 0) {
+					this.errors.researchers =
+						'Other Researchers cannot include users selected for PI, CRC, or Statistician roles';
+					isValid = false;
+				}
+			}
+
 			return isValid;
 		},
+
 		async handleSubmit() {
 			if (!this.validateForm()) return;
 
 			try {
-				await this.updateProject(this.$route.params.id, this.formData);
+				await this.updateProject(this.projectId, this.formData);
 				useToast().success('Project updated successfully');
-				this.$router.push('/research-portal');
+				this.$router.push(`/research-portal`);
 			} catch (error) {
 				useToast().error('Failed to update project');
 			}
 		},
-		async handleDelete() {
-			try {
-				await this.deleteProject(this.$route.params.id);
-				useToast().success('Project deleted successfully');
-				this.$router.push('/research-portal');
-			} catch (error) {
-				useToast().error('Failed to delete project');
-			} finally {
-				this.showDeleteConfirmation = false;
+
+		getDisabledOptionsFor(fieldName) {
+			const disabledOptions = [];
+
+			// Apply rules based on what field we're getting disabled options for
+			switch (fieldName) {
+				case 'principalInvestigator':
+					// PI cannot be in the researchers array
+					if (Array.isArray(this.formData.researchers)) {
+						disabledOptions.push(...this.formData.researchers);
+					}
+					break;
+
+				case 'coordinator':
+					// CRC cannot be the statistician
+					if (this.formData.statistician) {
+						disabledOptions.push(this.formData.statistician);
+					}
+					// CRC cannot be in researchers
+					if (Array.isArray(this.formData.researchers)) {
+						disabledOptions.push(...this.formData.researchers);
+					}
+					break;
+
+				case 'statistician':
+					// Statistician cannot be the CRC
+					if (this.formData.coordinator) {
+						disabledOptions.push(this.formData.coordinator);
+					}
+					// Statistician cannot be in researchers
+					if (Array.isArray(this.formData.researchers)) {
+						disabledOptions.push(...this.formData.researchers);
+					}
+					break;
+
+				case 'researchers':
+					// Researchers cannot include PI, CRC, or Statistician
+					if (this.formData.principalInvestigator) {
+						disabledOptions.push(this.formData.principalInvestigator);
+					}
+					if (this.formData.coordinator) {
+						disabledOptions.push(this.formData.coordinator);
+					}
+					if (this.formData.statistician) {
+						disabledOptions.push(this.formData.statistician);
+					}
+					break;
 			}
+
+			return disabledOptions;
+		},
+
+		updateRoleSelections() {
+			// When a role changes, this method is called
+			// We need to handle special cases like removing from researchers if selected as PI, CRC, or Statistician
+
+			// Clear any existing validation errors
+			this.errors = {
+				...this.errors,
+				principalInvestigator: '',
+				researchers: '',
+				coordinator: '',
+				statistician: '',
+			};
+
+			// If PI is selected and is in researchers, remove from researchers
+			if (
+				this.formData.principalInvestigator &&
+				Array.isArray(this.formData.researchers) &&
+				this.formData.researchers.includes(this.formData.principalInvestigator)
+			) {
+				this.formData.researchers = this.formData.researchers.filter(
+					(id) => id !== this.formData.principalInvestigator
+				);
+			}
+
+			// If CRC is selected and is in researchers, remove from researchers
+			if (
+				this.formData.coordinator &&
+				Array.isArray(this.formData.researchers) &&
+				this.formData.researchers.includes(this.formData.coordinator)
+			) {
+				this.formData.researchers = this.formData.researchers.filter(
+					(id) => id !== this.formData.coordinator
+				);
+			}
+
+			// If Statistician is selected and is in researchers, remove from researchers
+			if (
+				this.formData.statistician &&
+				Array.isArray(this.formData.researchers) &&
+				this.formData.researchers.includes(this.formData.statistician)
+			) {
+				this.formData.researchers = this.formData.researchers.filter(
+					(id) => id !== this.formData.statistician
+				);
+			}
+
+			// If CRC and Statistician are the same, clear the most recently changed one
+			if (
+				this.formData.coordinator &&
+				this.formData.statistician &&
+				this.formData.coordinator === this.formData.statistician
+			) {
+				// Determine which was changed last and reset it
+				// This is a simplification - you might need a more sophisticated approach
+				// For now, let's assume coordinator takes precedence
+				this.formData.statistician = '';
+			}
+		},
+
+		loadProjectData() {
+			this.formData = {
+				title: this.currentProject.title,
+				description: this.currentProject.description,
+				status: this.currentProject.status,
+				principalInvestigator: this.currentProject.principalInvestigator,
+				researchers: this.currentProject.researchers || [],
+				coordinator: this.currentProject.coordinator,
+				statistician: this.currentProject.statistician,
+			};
 		},
 	},
 	async created() {
-		const authStore = useAuthStore();
-		if (!authStore.isStaff) {
-			useToast().error('Unauthorized: Only staff members can access this page');
-			this.$router.push('/');
-			return;
-		}
-
-		await Promise.all([this.fetchProject(this.$route.params.id), this.fetchUsers()]);
+		this.projectId = this.$route.params.id;
+		await Promise.all([this.fetchUsers(), this.fetchProject(this.projectId)]);
 
 		if (this.currentProject) {
-			this.formData = { ...this.currentProject };
+			this.loadProjectData();
 		} else {
+			useToast().error('Project not found');
 			this.$router.push('/research-portal');
 		}
 	},
@@ -306,6 +400,8 @@ export default {
 
 <style lang="scss" scoped>
 .edit-project {
+	padding-top: calc(2rem + var(--navbar-height));
+
 	&.dark {
 		background-color: #1a1a1a;
 		color: #ffffff;
@@ -325,17 +421,12 @@ export default {
 				background-color: #2c3034;
 				color: #ffffff;
 			}
+
+			option {
+				background-color: #212529;
+				color: #ffffff;
+			}
 		}
 	}
-}
-
-:deep(.p-dropdown),
-:deep(.p-multiselect) {
-	width: 100%;
-}
-
-.delete-modal {
-	max-width: 400px;
-	margin: 0 auto;
 }
 </style>

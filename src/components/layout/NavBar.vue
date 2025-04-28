@@ -198,6 +198,13 @@ export default {
 			'isDev',
 		]),
 	},
+	watch: {
+		isAuthenticated(newVal) {
+			if (newVal) {
+				this.desktopDropdownOpen = false;
+			}
+		},
+	},
 	methods: {
 		...mapActions(useThemeStore, ['toggleDarkMode']),
 		...mapActions(useAuthStore, ['logout']),

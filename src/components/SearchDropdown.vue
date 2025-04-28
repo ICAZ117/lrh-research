@@ -376,6 +376,23 @@ export default {
 			background-color: #212529;
 			color: #fff;
 		}
+
+		.form-control {
+			background-color: #212529;
+			color: #fff;
+			border-color: #444;
+
+			&::placeholder {
+				color: #adb5bd;
+			}
+
+			&:focus {
+				background-color: #212529;
+				color: #fff;
+				border-color: #6c757d;
+				box-shadow: none;
+			}
+		}
 	}
 }
 </style>

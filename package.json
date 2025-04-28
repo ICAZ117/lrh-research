@@ -11,9 +11,14 @@
         "format": "prettier --write src/"
     },
     "dependencies": {
+        "@popperjs/core": "^2.11.8",
         "@primeuix/themes": "^1.0.0",
+        "@primevue/themes": "^4.3.3",
         "aos": "^2.3.4",
+        "bootstrap": "^5.3.3",
         "firebase": "^11.6.0",
+        "lodash-es": "^4.17.21",
+        "papaparse": "^5.5.2",
         "pinia": "^3.0.1",
         "primeicons": "^7.0.0",
         "primevue": "^4.3.2",
@@ -22,9 +27,7 @@
         "vue-router": "^4.5.0",
         "vue-toastification": "^2.0.0-rc.5",
         "vue3-carousel": "^0.15.0",
-        "@popperjs/core": "^2.11.8",
-        "@primevue/themes": "^4.3.3",
-        "bootstrap": "^5.3.3"
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@eslint/js": "^9.21.0",

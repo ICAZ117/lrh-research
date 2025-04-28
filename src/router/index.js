@@ -18,7 +18,7 @@ const routes = [
   {
     path: '/codebook',
     name: 'Codebook',
-    component: () => import('../views/Codebook.vue')
+    component: () => import('../views/codebook/Codebook.vue')
   },
   {
     path: '/research-portal',

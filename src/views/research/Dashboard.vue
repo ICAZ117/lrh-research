@@ -25,12 +25,33 @@
 					>
 						<div class="card h-100">
 							<div class="card-body">
-								<h3 class="h5 card-title">{{ project.title }}</h3>
+								<h3 class="h5 card-title mb-3">{{ project.title }}</h3>
 								<p class="card-text">{{ project.description }}</p>
 								<div class="mb-3">
-									<span class="badge" :class="getStatusClass(project.status)">
+									<div
+										class="status-badge"
+										:class="getStatusClass(project.status)"
+										@click="toggleStatusDropdown(project.id)"
+									>
 										{{ project.status }}
-									</span>
+										<i class="fas fa-chevron-down ms-2"></i>
+
+										<div
+											v-if="activeDropdown === project.id"
+											class="status-dropdown"
+											v-click-outside="closeDropdown"
+										>
+											<div
+												v-for="status in statusOptions"
+												:key="status"
+												class="status-option"
+												:class="{ active: status === project.status }"
+												@click.stop="handleStatusUpdate(project.id, status)"
+											>
+												{{ status }}
+											</div>
+										</div>
+									</div>
 								</div>
 								<dl class="row mb-0">
 									<dt class="col-sm-4">PI:</dt>
@@ -48,12 +69,20 @@
 								</dl>
 							</div>
 							<div class="card-footer bg-transparent">
-								<router-link
-									:to="`/research-portal/${project.id}`"
-									class="btn btn-outline-primary btn-sm"
-								>
-									View Details
-								</router-link>
+								<div class="d-flex gap-2">
+									<router-link
+										:to="`/research-portal/${project.id}`"
+										class="btn btn-outline-primary btn-sm"
+									>
+										View Details
+									</router-link>
+									<router-link
+										:to="`/research-portal/${project.id}/edit`"
+										class="btn btn-outline-secondary btn-sm"
+									>
+										<i class="fas fa-edit"></i> Edit
+									</router-link>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -74,12 +103,33 @@
 					>
 						<div class="card h-100">
 							<div class="card-body">
-								<h3 class="h5 card-title">{{ project.title }}</h3>
+								<h3 class="h5 card-title mb-3">{{ project.title }}</h3>
 								<p class="card-text">{{ project.description }}</p>
 								<div class="mb-3">
-									<span class="badge" :class="getStatusClass(project.status)">
+									<div
+										class="status-badge"
+										:class="getStatusClass(project.status)"
+										@click="toggleStatusDropdown(project.id)"
+									>
 										{{ project.status }}
-									</span>
+										<i class="fas fa-chevron-down ms-2"></i>
+
+										<div
+											v-if="activeDropdown === project.id"
+											class="status-dropdown"
+											v-click-outside="closeDropdown"
+										>
+											<div
+												v-for="status in statusOptions"
+												:key="status"
+												class="status-option"
+												:class="{ active: status === project.status }"
+												@click.stop="handleStatusUpdate(project.id, status)"
+											>
+												{{ status }}
+											</div>
+										</div>
+									</div>
 								</div>
 								<dl class="row mb-0">
 									<dt class="col-sm-4">PI:</dt>
@@ -97,12 +147,20 @@
 								</dl>
 							</div>
 							<div class="card-footer bg-transparent">
-								<router-link
-									:to="`/research-portal/${project.id}`"
-									class="btn btn-outline-primary btn-sm"
-								>
-									View Details
-								</router-link>
+								<div class="d-flex gap-2">
+									<router-link
+										:to="`/research-portal/${project.id}`"
+										class="btn btn-outline-primary btn-sm"
+									>
+										View Details
+									</router-link>
+									<router-link
+										:to="`/research-portal/${project.id}/edit`"
+										class="btn btn-outline-secondary btn-sm"
+									>
+										<i class="fas fa-edit"></i> Edit
+									</router-link>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -118,10 +176,13 @@
 					<div v-for="project in myProjects" :key="project.id" class="col-md-6 col-lg-4">
 						<div class="card h-100">
 							<div class="card-body">
-								<h3 class="h5 card-title">{{ project.title }}</h3>
+								<h3 class="h5 card-title mb-3">{{ project.title }}</h3>
 								<p class="card-text">{{ project.description }}</p>
 								<div class="mb-3">
-									<span class="badge" :class="getStatusClass(project.status)">
+									<span
+										class="status-badge"
+										:class="getStatusClass(project.status)"
+									>
 										{{ project.status }}
 									</span>
 								</div>
@@ -161,24 +222,63 @@ import { mapState, mapActions } from 'pinia';
 import { useAuthStore } from '@/stores/auth';
 import { useResearchStore } from '@/stores/research';
 import { useThemeStore } from '@/stores/theme';
+import { useToast } from 'vue-toastification';
 
 export default {
 	name: 'ResearchPortal',
+	data() {
+		return {
+			activeDropdown: null,
+			statusOptions: ['In Progress', 'Completed', 'On Hold', 'Cancelled'],
+		};
+	},
 	computed: {
 		...mapState(useAuthStore, ['isStaff', 'user']),
 		...mapState(useResearchStore, ['allProjects', 'myProjects']),
 		...mapState(useThemeStore, ['isDarkMode']),
 	},
+	directives: {
+		clickOutside: {
+			mounted(el, binding) {
+				el._clickOutside = (event) => {
+					if (!(el === event.target || el.contains(event.target))) {
+						binding.value(event);
+					}
+				};
+				document.addEventListener('click', el._clickOutside);
+			},
+			unmounted(el) {
+				document.removeEventListener('click', el._clickOutside);
+			},
+		},
+	},
 	methods: {
-		...mapActions(useResearchStore, ['fetchProjects', 'getUserName']),
+		...mapActions(useResearchStore, ['fetchProjects', 'getUserName', 'updateProjectStatus']),
 		getStatusClass(status) {
 			const classes = {
-				'In Progress': 'bg-primary',
-				Completed: 'bg-success',
-				'On Hold': 'bg-warning',
-				Cancelled: 'bg-danger',
+				'In Progress': 'status-primary',
+				Completed: 'status-success',
+				'On Hold': 'status-warning',
+				Cancelled: 'status-danger',
 			};
-			return classes[status] || 'bg-secondary';
+			return classes[status] || 'status-secondary';
+		},
+		toggleStatusDropdown(projectId) {
+			if (this.isStaff) {
+				this.activeDropdown = this.activeDropdown === projectId ? null : projectId;
+			}
+		},
+		closeDropdown() {
+			this.activeDropdown = null;
+		},
+		async handleStatusUpdate(projectId, newStatus) {
+			try {
+				await this.updateProjectStatus(projectId, newStatus);
+				useToast().success('Project status updated successfully');
+				this.closeDropdown();
+			} catch (error) {
+				useToast().error('Failed to update project status');
+			}
 		},
 	},
 	async created() {
@@ -199,6 +299,11 @@ export default {
 			background-color: #2c3034;
 			border-color: #444;
 		}
+
+		.status-dropdown {
+			background-color: #2c3034;
+			border-color: #444;
+		}
 	}
 }
 
@@ -210,8 +315,63 @@ export default {
 	}
 }
 
-.badge {
-	font-size: 0.875rem;
+.status-badge {
+	display: inline-flex;
+	align-items: center;
 	padding: 0.5em 1em;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	color: white;
+	cursor: pointer;
+	position: relative;
+	user-select: none;
+
+	i {
+		font-size: 0.75rem;
+	}
+
+	&.status-primary {
+		background-color: var(--bs-primary);
+	}
+	&.status-success {
+		background-color: var(--bs-success);
+	}
+	&.status-warning {
+		background-color: var(--bs-warning);
+	}
+	&.status-danger {
+		background-color: var(--bs-danger);
+	}
+	&.status-secondary {
+		background-color: var(--bs-secondary);
+	}
+}
+
+.status-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin-top: 4px;
+	background: white;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	z-index: 1000;
+}
+
+.status-option {
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+	transition: background-color 0.2s;
+	color: #212529;
+
+	&:hover {
+		background-color: rgba(0, 0, 0, 0.05);
+	}
+
+	&.active {
+		background-color: rgba(0, 0, 0, 0.1);
+	}
 }
 </style>

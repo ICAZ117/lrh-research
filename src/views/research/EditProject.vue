@@ -1,7 +1,14 @@
+<!-- eslint-disable vue/no-reserved-component-names -->
+<!-- eslint-disable vue/no-reserved-component-names -->
 <template>
-	<div class="new-project min-vh-100 py-5 mt-5" :class="{ dark: isDarkMode }">
+	<div class="edit-project min-vh-100 py-5 mt-5" :class="{ dark: isDarkMode }">
 		<div class="container">
-			<h1 class="mb-4">Create New Research Project</h1>
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h1>Edit Research Project</h1>
+				<button class="btn btn-danger" @click="showDeleteConfirmation = true">
+					<i class="fas fa-trash me-2"></i>Delete Project
+				</button>
+			</div>
 
 			<div class="card">
 				<div class="card-body">
@@ -51,11 +58,12 @@
 							<label class="form-label">Principal Investigator</label>
 							<Dropdown
 								v-model="formData.principalInvestigator"
-								:options="userOptions"
-								optionLabel="name"
+								:options="allUsers"
+								optionLabel="fullName"
 								optionValue="id"
-								placeholder="Select Principal Investigator"
 								:filter="true"
+								filterPlaceholder="Search users..."
+								placeholder="Select Principal Investigator"
 								class="w-100"
 								:class="{ 'is-invalid': errors.principalInvestigator }"
 							/>
@@ -66,14 +74,14 @@
 							<label class="form-label">Other Researchers</label>
 							<MultiSelect
 								v-model="formData.researchers"
-								:options="userOptions"
-								optionLabel="name"
+								:options="allUsers"
+								optionLabel="fullName"
 								optionValue="id"
-								placeholder="Select Researchers"
 								:filter="true"
+								filterPlaceholder="Search users..."
+								placeholder="Select Researchers"
 								class="w-100"
 								:class="{ 'is-invalid': errors.researchers }"
-								display="chip"
 							/>
 							<div class="invalid-feedback">{{ errors.researchers }}</div>
 						</div>
@@ -82,11 +90,12 @@
 							<label class="form-label">Clinical Research Coordinator</label>
 							<Dropdown
 								v-model="formData.coordinator"
-								:options="userOptions"
-								optionLabel="name"
+								:options="allUsers"
+								optionLabel="fullName"
 								optionValue="id"
-								placeholder="Select Coordinator"
 								:filter="true"
+								filterPlaceholder="Search users..."
+								placeholder="Select Coordinator"
 								class="w-100"
 								:class="{ 'is-invalid': errors.coordinator }"
 							/>
@@ -97,11 +106,12 @@
 							<label class="form-label">Statistician</label>
 							<Dropdown
 								v-model="formData.statistician"
-								:options="userOptions"
-								optionLabel="name"
+								:options="allUsers"
+								optionLabel="fullName"
 								optionValue="id"
-								placeholder="Select Statistician"
 								:filter="true"
+								filterPlaceholder="Search users..."
+								placeholder="Select Statistician"
 								class="w-100"
 								:class="{ 'is-invalid': errors.statistician }"
 							/>
@@ -114,7 +124,7 @@
 									v-if="loading"
 									class="spinner-border spinner-border-sm me-2"
 								></span>
-								Create Project
+								Update Project
 							</button>
 							<router-link to="/research-portal" class="btn btn-outline-secondary">
 								Cancel
@@ -124,22 +134,55 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Delete Confirmation Modal -->
+		<Dialog
+			v-model:visible="showDeleteConfirmation"
+			header="Confirm Deletion"
+			:modal="true"
+			:closable="false"
+			class="delete-modal"
+		>
+			<p class="mb-4">
+				Are you sure you want to delete this project? This action cannot be undone.
+			</p>
+			<template #footer>
+				<Button
+					label="Cancel"
+					class="p-button-text"
+					@click="showDeleteConfirmation = false"
+				/>
+				<Button
+					label="Delete"
+					class="p-button-danger"
+					@click="handleDelete"
+					:loading="loading"
+				/>
+			</template>
+		</Dialog>
 	</div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'pinia';
+import { useAuthStore } from '@/stores/auth';
 import { useResearchStore } from '@/stores/research';
 import { useThemeStore } from '@/stores/theme';
 import { useToast } from 'vue-toastification';
 import Dropdown from 'primevue/dropdown';
 import MultiSelect from 'primevue/multiselect';
+import Dialog from 'primevue/dialog';
+import Button from 'primevue/button';
 
 export default {
-	name: 'NewProject',
+	name: 'EditProject',
 	components: {
 		Dropdown,
 		MultiSelect,
+		// eslint-disable-next-line vue/no-reserved-component-names
+		Dialog,
+		// eslint-disable-next-line vue/no-reserved-component-names
+		Button,
 	},
 	data() {
 		return {
@@ -161,20 +204,20 @@ export default {
 				coordinator: '',
 				statistician: '',
 			},
+			showDeleteConfirmation: false,
 		};
 	},
 	computed: {
-		...mapState(useResearchStore, ['allUsers', 'loading']),
+		...mapState(useResearchStore, ['currentProject', 'allUsers', 'loading']),
 		...mapState(useThemeStore, ['isDarkMode']),
-		userOptions() {
-			return this.allUsers.map((user) => ({
-				id: user.id,
-				name: `${user.title} ${user.firstName} ${user.lastName}`,
-			}));
-		},
 	},
 	methods: {
-		...mapActions(useResearchStore, ['fetchUsers', 'createProject']),
+		...mapActions(useResearchStore, [
+			'fetchProject',
+			'fetchUsers',
+			'updateProject',
+			'deleteProject',
+		]),
 		validateForm() {
 			let isValid = true;
 			this.errors = {
@@ -223,22 +266,46 @@ export default {
 			if (!this.validateForm()) return;
 
 			try {
-				const projectId = await this.createProject(this.formData);
-				useToast().success('Project created successfully');
-				this.$router.push(`/research-portal/${projectId}`);
+				await this.updateProject(this.$route.params.id, this.formData);
+				useToast().success('Project updated successfully');
+				this.$router.push('/research-portal');
 			} catch (error) {
-				useToast().error('Failed to create project');
+				useToast().error('Failed to update project');
+			}
+		},
+		async handleDelete() {
+			try {
+				await this.deleteProject(this.$route.params.id);
+				useToast().success('Project deleted successfully');
+				this.$router.push('/research-portal');
+			} catch (error) {
+				useToast().error('Failed to delete project');
+			} finally {
+				this.showDeleteConfirmation = false;
 			}
 		},
 	},
 	async created() {
-		await this.fetchUsers();
+		const authStore = useAuthStore();
+		if (!authStore.isStaff) {
+			useToast().error('Unauthorized: Only staff members can access this page');
+			this.$router.push('/');
+			return;
+		}
+
+		await Promise.all([this.fetchProject(this.$route.params.id), this.fetchUsers()]);
+
+		if (this.currentProject) {
+			this.formData = { ...this.currentProject };
+		} else {
+			this.$router.push('/research-portal');
+		}
 	},
 };
 </script>
 
 <style lang="scss" scoped>
-.new-project {
+.edit-project {
 	&.dark {
 		background-color: #1a1a1a;
 		color: #ffffff;
@@ -259,64 +326,16 @@ export default {
 				color: #ffffff;
 			}
 		}
-
-		:deep(.p-dropdown),
-		:deep(.p-multiselect) {
-			background-color: #212529;
-			border-color: #444;
-
-			.p-dropdown-label,
-			.p-multiselect-label {
-				color: #ffffff;
-			}
-
-			.p-dropdown-trigger,
-			.p-multiselect-trigger {
-				color: #ffffff;
-			}
-		}
-
-		:deep(.p-dropdown-panel),
-		:deep(.p-multiselect-panel) {
-			background-color: #2c3034;
-			border-color: #444;
-
-			.p-dropdown-item,
-			.p-multiselect-item {
-				color: #ffffff;
-
-				&:hover {
-					background-color: #444;
-				}
-
-				&.p-highlight {
-					background-color: var(--bs-primary);
-				}
-			}
-		}
 	}
 }
 
 :deep(.p-dropdown),
 :deep(.p-multiselect) {
 	width: 100%;
-
-	.p-dropdown-label,
-	.p-multiselect-label {
-		padding: 0.75rem 1rem;
-	}
 }
 
-:deep(.p-dropdown-panel),
-:deep(.p-multiselect-panel) {
-	.p-dropdown-filter-container,
-	.p-multiselect-filter-container {
-		padding: 0.5rem;
-
-		input {
-			width: 100%;
-			padding: 0.5rem;
-		}
-	}
+.delete-modal {
+	max-width: 400px;
+	margin: 0 auto;
 }
 </style>

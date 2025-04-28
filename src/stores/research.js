@@ -10,7 +10,8 @@ import {
   setDoc,
   updateDoc,
   addDoc,
-  arrayUnion
+  arrayUnion,
+  deleteDoc
 } from 'firebase/firestore'
 
 export const useResearchStore = defineStore('research', {
@@ -18,7 +19,6 @@ export const useResearchStore = defineStore('research', {
     allProjects: [],
     myProjects: [],
     currentProject: null,
-    staffUsers: [],
     allUsers: [],
     userNames: {},
     loading: false
@@ -65,14 +65,6 @@ export const useResearchStore = defineStore('research', {
       this.loading = true
       try {
         const usersRef = collection(db, 'users')
-
-        const staffQuery = query(usersRef, where('userType', '==', 'staff'))
-        const staffSnapshot = await getDocs(staffQuery)
-        this.staffUsers = staffSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-
         const allSnapshot = await getDocs(usersRef)
         this.allUsers = allSnapshot.docs.map(doc => ({
           id: doc.id,
@@ -115,15 +107,15 @@ export const useResearchStore = defineStore('research', {
           ...projectData.researchers
         ]
 
-        const projectsCollectionRef = collection(db, 'projects');
+        const projectsCollectionRef = collection(db, 'projects')
         const newProjectRef = await addDoc(projectsCollectionRef, {
           ...projectData,
           assignedUsers: [...new Set(assignedUsers)],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        });
+        })
 
-        const projectId = newProjectRef.id; // Get the auto-generated ID
+        const projectId = newProjectRef.id
 
         for (const userId of assignedUsers) {
           const userRef = doc(db, 'users', userId)
@@ -135,6 +127,74 @@ export const useResearchStore = defineStore('research', {
         return projectId
       } catch (error) {
         console.error('Error creating project:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateProject(projectId, projectData) {
+      this.loading = true
+      try {
+        const projectRef = doc(db, 'projects', projectId)
+        await updateDoc(projectRef, {
+          ...projectData,
+          updatedAt: new Date().toISOString()
+        })
+        return true
+      } catch (error) {
+        console.error('Error updating project:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateProjectStatus(projectId, newStatus) {
+      this.loading = true
+      try {
+        const projectRef = doc(db, 'projects', projectId)
+        await updateDoc(projectRef, {
+          status: newStatus,
+          updatedAt: new Date().toISOString()
+        })
+
+        // Update local state
+        const projectInAll = this.allProjects.find(p => p.id === projectId)
+        if (projectInAll) projectInAll.status = newStatus
+
+        const projectInMy = this.myProjects.find(p => p.id === projectId)
+        if (projectInMy) projectInMy.status = newStatus
+
+        if (this.currentProject?.id === projectId) {
+          this.currentProject.status = newStatus
+        }
+
+        return true
+      } catch (error) {
+        console.error('Error updating project status:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteProject(projectId) {
+      this.loading = true
+      try {
+        const projectRef = doc(db, 'projects', projectId)
+        await deleteDoc(projectRef)
+
+        // Update local state
+        this.allProjects = this.allProjects.filter(p => p.id !== projectId)
+        this.myProjects = this.myProjects.filter(p => p.id !== projectId)
+        if (this.currentProject?.id === projectId) {
+          this.currentProject = null
+        }
+
+        return true
+      } catch (error) {
+        console.error('Error deleting project:', error)
         throw error
       } finally {
         this.loading = false

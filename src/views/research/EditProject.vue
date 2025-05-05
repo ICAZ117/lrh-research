@@ -1,4 +1,4 @@
-<template>
+  <template>
 	<div class="edit-project min-vh-100" :class="{ dark: isDarkMode }">
 		<div class="container pb-5">
 			<h1 class="mb-4">Edit Research Project</h1>
@@ -128,7 +128,7 @@
 	</div>
 </template>
 
-<script>
+  <script>
 import { mapState, mapActions } from 'pinia';
 import { useResearchStore } from '@/stores/research';
 import { useThemeStore } from '@/stores/theme';
@@ -398,12 +398,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+  <style lang="scss" scoped>
 .edit-project {
 	padding-top: calc(2rem + var(--navbar-height));
+	background: linear-gradient(135deg, var(--light-2) 0%, var(--light-accent) 100%);
 
 	&.dark {
-		background-color: #1a1a1a;
+		background: var(--dark-3) !important;
 		color: #ffffff;
 
 		.card {

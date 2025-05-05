@@ -15,32 +15,37 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == "staff";
     }
 
-    // Prevent users from elevating their own privileges
     function isCreatingOrUpdatingSelfProperly(userId) {
       return request.auth.uid == userId &&
              (!("userType" in request.resource.data) ||
               request.resource.data.userType == "user");
     }
 
+    // Rules for the users collection
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isResearchStaff() || isSuperUser());
-
-      // Allow delete if user is deleting their own doc
       allow delete: if isSignedIn() && request.auth.uid == userId;
-
       allow write: if isSignedIn() && (
         isSuperUser() ||
         isResearchStaff() ||
-        (request.auth.uid == userId &&
-         (!("userType" in request.resource.data) ||
-          request.resource.data.userType == "user"))
+        isCreatingOrUpdatingSelfProperly(userId)
       );
+
+      // Recursive rule to allow access to subcollections under each user document
+      match /{subcollection=**}/{subdoc} {
+        allow read, write: if isSuperUser() || isResearchStaff();
+      }
     }
 
-
+    // Global rule for all top-level collections and documents
     match /{collection}/{document} {
       allow read: if true;
       allow write: if isResearchStaff() || isSuperUser();
+
+      // Recursive rule to allow access to any subcollection anywhere
+      match /{subcollection=**}/{subdoc} {
+        allow read, write: if isSuperUser() || isResearchStaff();
+      }
     }
   }
 }

@@ -27,7 +27,7 @@
 							<div class="card-body">
 								<h3 class="h5 card-title mb-3">{{ project.title }}</h3>
 								<p class="card-text">{{ project.description }}</p>
-								<div class="mb-3">
+								<div class="mb-3 d-flex align-items-center gap-3">
 									<div
 										class="status-badge"
 										:class="getStatusClass(project.status)"
@@ -50,6 +50,39 @@
 												{{ status }}
 											</div>
 										</div>
+									</div>
+
+									<div v-if="isStaff" class="activity-toggle">
+										<label class="switch">
+											<input
+												type="checkbox"
+												:checked="project.needsAction"
+												@change="
+													handleActivityToggle(
+														project.id,
+														!project.needsAction
+													)
+												"
+											/>
+											<span class="slider round"></span>
+										</label>
+										<span
+											class="ms-2 activity-label"
+											:class="{ 'text-warning': project.needsAction }"
+										>
+											{{
+												project.needsAction
+													? 'Action Required'
+													: 'No Action Needed'
+											}}
+										</span>
+									</div>
+									<div
+										v-else-if="project.needsAction"
+										class="activity-status text-warning"
+									>
+										<i class="fas fa-exclamation-circle me-2"></i>
+										Action Required
 									</div>
 								</div>
 								<dl class="row mb-0">
@@ -105,7 +138,7 @@
 							<div class="card-body">
 								<h3 class="h5 card-title mb-3">{{ project.title }}</h3>
 								<p class="card-text">{{ project.description }}</p>
-								<div class="mb-3">
+								<div class="mb-3 d-flex align-items-center gap-3">
 									<div
 										class="status-badge"
 										:class="getStatusClass(project.status)"
@@ -128,6 +161,39 @@
 												{{ status }}
 											</div>
 										</div>
+									</div>
+
+									<div v-if="isStaff" class="activity-toggle">
+										<label class="switch">
+											<input
+												type="checkbox"
+												:checked="project.needsAction"
+												@change="
+													handleActivityToggle(
+														project.id,
+														!project.needsAction
+													)
+												"
+											/>
+											<span class="slider round"></span>
+										</label>
+										<span
+											class="ms-2 activity-label"
+											:class="{ 'text-warning': project.needsAction }"
+										>
+											{{
+												project.needsAction
+													? 'Action Required'
+													: 'No Action Needed'
+											}}
+										</span>
+									</div>
+									<div
+										v-else-if="project.needsAction"
+										class="activity-status text-warning"
+									>
+										<i class="fas fa-exclamation-circle me-2"></i>
+										Action Required
 									</div>
 								</div>
 								<dl class="row mb-0">
@@ -177,13 +243,20 @@
 							<div class="card-body">
 								<h3 class="h5 card-title mb-3">{{ project.title }}</h3>
 								<p class="card-text">{{ project.description }}</p>
-								<div class="mb-3">
+								<div class="mb-3 d-flex align-items-center gap-3">
 									<span
 										class="status-badge"
 										:class="getStatusClass(project.status)"
 									>
 										{{ project.status }}
 									</span>
+									<div
+										v-if="project.needsAction"
+										class="activity-status text-warning"
+									>
+										<i class="fas fa-exclamation-circle me-2"></i>
+										Action Required
+									</div>
 								</div>
 								<dl class="row mb-0">
 									<dt class="col-sm-4">PI:</dt>
@@ -229,7 +302,7 @@ export default {
 	data() {
 		return {
 			activeDropdown: null,
-			statusOptions: ['In Progress', 'Completed', 'On Hold', 'Cancelled'],
+			statusOptions: ['Intake', 'Pre-IRB', 'IRB Review', 'Post-IRB'],
 		};
 	},
 	computed: {
@@ -238,7 +311,6 @@ export default {
 		...mapState(useThemeStore, ['isDarkMode']),
 	},
 	setup() {
-		// Global click handler for closing dropdowns
 		const handleOutsideClick = (event) => {
 			const dropdowns = document.querySelectorAll('.status-badge');
 			let clickedOutside = true;
@@ -250,7 +322,6 @@ export default {
 			});
 
 			if (clickedOutside) {
-				// Use the store to access the component instance
 				const store = useResearchStore();
 				if (store.activeDropdown !== null) {
 					store.setActiveDropdown(null);
@@ -271,6 +342,7 @@ export default {
 			'fetchProjects',
 			'getUserName',
 			'updateProjectStatus',
+			'updateProjectActivity',
 			'setActiveDropdown',
 		]),
 		getStatusClass(status) {
@@ -280,14 +352,12 @@ export default {
 				'On Hold': 'status-warning',
 				Cancelled: 'status-danger',
 			};
-			return classes[status] || 'status-secondary';
+			return classes[status] || 'status-primary';
 		},
 		toggleStatusDropdown(projectId) {
 			if (this.isStaff) {
-				// Prevent event bubbling
 				event.stopPropagation();
 				this.activeDropdown = this.activeDropdown === projectId ? null : projectId;
-				// Also update the store value
 				this.setActiveDropdown(this.activeDropdown);
 			}
 		},
@@ -296,10 +366,19 @@ export default {
 				await this.updateProjectStatus(projectId, newStatus);
 				useToast().success('Project status updated successfully');
 				this.activeDropdown = null;
-				// Also update the store value
 				this.setActiveDropdown(null);
 			} catch (error) {
 				useToast().error('Failed to update project status');
+			}
+		},
+		async handleActivityToggle(projectId, needsAction) {
+			try {
+				await this.updateProjectActivity(projectId, needsAction);
+				useToast().success(
+					`Project marked as ${needsAction ? 'needing action' : 'no action needed'}`
+				);
+			} catch (error) {
+				useToast().error('Failed to update project activity status');
 			}
 		},
 	},
@@ -312,9 +391,10 @@ export default {
 <style lang="scss" scoped>
 .research-portal {
 	padding-top: calc(2rem + var(--navbar-height));
+	background: linear-gradient(135deg, var(--light-2) 0%, var(--light-accent) 100%);
 
 	&.dark {
-		background-color: #1a1a1a;
+		background: var(--dark-3) !important;
 		color: #ffffff;
 
 		.card {
@@ -407,5 +487,71 @@ export default {
 	&.active {
 		background-color: rgba(0, 0, 0, 0.1);
 	}
+}
+
+.activity-toggle {
+	display: flex;
+	align-items: center;
+}
+
+.switch {
+	position: relative;
+	display: inline-block;
+	width: 39px;
+	height: 22.1px;
+
+	input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+
+		&:checked + .slider {
+			background-color: var(--bs-warning);
+		}
+
+		&:checked + .slider:before {
+			transform: translateX(15px);
+		}
+	}
+}
+
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	transition: 0.4s;
+
+	&:before {
+		position: absolute;
+		content: '';
+		height: 18px;
+		width: 18px;
+		left: 3px;
+		bottom: 2px;
+		background-color: white;
+		transition: 0.4s;
+	}
+
+	&.round {
+		border-radius: 34px;
+
+		&:before {
+			border-radius: 50%;
+		}
+	}
+}
+
+.activity-label {
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+.activity-status {
+	font-size: 0.875rem;
+	font-weight: 500;
 }
 </style>

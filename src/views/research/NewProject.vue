@@ -333,9 +333,10 @@ export default {
 <style lang="scss" scoped>
 .new-project {
 	padding-top: calc(2rem + var(--navbar-height));
+	background: linear-gradient(135deg, var(--light-2) 0%, var(--light-accent) 100%);
 
 	&.dark {
-		background-color: #1a1a1a;
+		background: var(--dark-3) !important;
 		color: #ffffff;
 
 		.card {

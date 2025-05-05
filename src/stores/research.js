@@ -12,7 +12,9 @@ import {
   addDoc,
   arrayUnion,
   deleteDoc,
-  arrayRemove
+  arrayRemove,
+  serverTimestamp,
+  orderBy
 } from 'firebase/firestore'
 
 export const useResearchStore = defineStore('research', {
@@ -20,6 +22,8 @@ export const useResearchStore = defineStore('research', {
     allProjects: [],
     myProjects: [],
     currentProject: null,
+    projectFiles: {},
+    projectComments: [],
     allUsers: [],
     userNames: {},
     loading: false,
@@ -27,6 +31,67 @@ export const useResearchStore = defineStore('research', {
   }),
 
   actions: {
+    setActiveDropdown(dropdownId) {
+      this.activeDropdown = dropdownId;
+    },
+
+    async fetchProjectFiles(projectType) {
+      try {
+        const docRef = doc(db, 'project-files', projectType);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          this.projectFiles[projectType] = docSnap.data().files || [];
+        }
+      } catch (error) {
+        console.error('Error fetching project files:', error);
+        throw error;
+      }
+    },
+
+    async fetchProjectComments(projectId) {
+      try {
+        const commentsRef = collection(db, 'projects', projectId, 'comments');
+        const q = query(commentsRef, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        this.projectComments = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (error) {
+        console.error('Error fetching project comments:', error);
+        throw error;
+      }
+    },
+
+    async addProjectComment(projectId, commentData) {
+      try {
+        const commentsRef = collection(db, 'projects', projectId, 'comments');
+        await addDoc(commentsRef, {
+          ...commentData,
+          timestamp: serverTimestamp()
+        });
+        await this.fetchProjectComments(projectId);
+      } catch (error) {
+        console.error('Error adding project comment:', error);
+        throw error;
+      }
+    },
+
+    async addSystemComment(projectId, action, details) {
+      try {
+        const commentsRef = collection(db, 'projects', projectId, 'comments');
+        await addDoc(commentsRef, {
+          type: 'system',
+          action,
+          details,
+          timestamp: serverTimestamp()
+        });
+        await this.fetchProjectComments(projectId);
+      } catch (error) {
+        console.error('Error adding system comment:', error);
+        throw error;
+      }
+    },
     async fetchProjects(isStaff, userId) {
       this.loading = true
       try {
@@ -36,7 +101,8 @@ export const useResearchStore = defineStore('research', {
           const querySnapshot = await getDocs(projectsRef)
           this.allProjects = querySnapshot.docs.map(doc => ({
             id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            needsAction: doc.data().needsAction || false
           }))
 
           this.myProjects = this.allProjects.filter(project =>
@@ -50,13 +116,43 @@ export const useResearchStore = defineStore('research', {
           const querySnapshot = await getDocs(q)
           this.myProjects = querySnapshot.docs.map(doc => ({
             id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            needsAction: doc.data().needsAction || false
           }))
         }
 
         await this.fetchUserNames()
       } catch (error) {
         console.error('Error fetching projects:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateProjectActivity(projectId, needsAction) {
+      this.loading = true
+      try {
+        const projectRef = doc(db, 'projects', projectId)
+        await updateDoc(projectRef, {
+          needsAction,
+          updatedAt: new Date().toISOString()
+        })
+
+        // Update local state
+        const projectInAll = this.allProjects.find(p => p.id === projectId)
+        if (projectInAll) projectInAll.needsAction = needsAction
+
+        const projectInMy = this.myProjects.find(p => p.id === projectId)
+        if (projectInMy) projectInMy.needsAction = needsAction
+
+        if (this.currentProject?.id === projectId) {
+          this.currentProject.needsAction = needsAction
+        }
+
+        return true
+      } catch (error) {
+        console.error('Error updating project activity:', error)
         throw error
       } finally {
         this.loading = false
@@ -269,10 +365,6 @@ export const useResearchStore = defineStore('research', {
 
     getUserName(userId) {
       return this.userNames[userId] || 'Loading...'
-    },
-
-    setActiveDropdown(projectId) {
-      this.activeDropdown = projectId;
     },
   }
 })

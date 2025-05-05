@@ -110,34 +110,87 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr
-									v-for="(item, index) in sortedResults"
-									:key="index"
-									:class="{ highlight: isHighlighted(item) }"
-								>
-									<td>{{ item.ID || '-' }}</td>
-									<td>{{ item.category }}</td>
-									<td>{{ item.Variable }}</td>
-									<td class="description-cell">{{ item.VariableDescription }}</td>
-									<td>
-										<span
-											class="type-badge"
-											:class="getTypeBadgeClass(item.Type)"
-											>{{ item.Type || 'Unknown' }}</span
+								<template v-for="(item, index) in sortedResults" :key="index">
+									<tr
+										:class="{
+											highlight: isHighlighted(item),
+											'row-expanded': isRowExpanded(item.ID),
+										}"
+										@click="toggleRowExpansion(item.ID)"
+										class="variable-row"
+									>
+										<td>
+											<div
+												:class="{
+													'expanded-content': isRowExpanded(item.ID),
+													'truncated-content': !isRowExpanded(item.ID),
+												}"
+											>
+												{{ item.ID || '-' }}
+											</div>
+										</td>
+										<td>
+											<div
+												:class="{
+													'expanded-content': isRowExpanded(item.ID),
+													'truncated-content': !isRowExpanded(item.ID),
+												}"
+											>
+												{{ item.category }}
+											</div>
+										</td>
+										<td>
+											<div
+												:class="{
+													'expanded-content': isRowExpanded(item.ID),
+													'truncated-content': !isRowExpanded(item.ID),
+												}"
+											>
+												{{ item.Variable }}
+											</div>
+										</td>
+										<td class="description-cell">
+											<div
+												class="truncated-content"
+												v-if="!isRowExpanded(item.ID)"
+											>
+												{{ item.VariableDescription }}
+											</div>
+											<div class="expanded-content" v-else>
+												{{ item.VariableDescription }}
+											</div>
+										</td>
+										<td class="notes-cell">
+											<div
+												class="truncated-content"
+												v-if="!isRowExpanded(item.ID)"
+											>
+												{{ item.Notes || '-' }}
+											</div>
+											<div class="expanded-content" v-else>
+												{{ item.Notes || '-' }}
+											</div>
+										</td>
+										<td
+											v-if="isAuthenticated"
+											class="actions-column"
+											@click.stop
 										>
-									</td>
-									<td v-if="isAuthenticated" class="actions-column">
-										<button class="btn btn-icon" @click="editVariable(item)">
-											<i class="pi pi-pencil"></i>
-										</button>
-										<button
-											class="btn btn-icon text-danger"
-											@click="deleteVariable(item)"
-										>
-											<i class="pi pi-trash"></i>
-										</button>
-									</td>
-								</tr>
+											<button
+												class="btn btn-icon"
+												@click="editVariable(item)"
+											>
+												<i class="pi pi-pencil"></i>
+											</button>
+											<button
+												class="btn btn-icon text-danger"
+												@click="deleteVariable(item)"
+											>
+												<i class="pi pi-trash"></i>
+											</button>
+										</td>
+									</tr>
+								</template>
 								<tr v-if="sortedResults.length === 0">
 									<td
 										:colspan="
@@ -223,39 +276,87 @@
 										</tr>
 									</thead>
 									<tbody>
-										<tr
+										<template
 											v-for="(item, itemIndex) in getCategoryVariables(
 												category
 											)"
 											:key="itemIndex"
 										>
-											<td>{{ item.ID || '-' }}</td>
-											<td>{{ item.Variable }}</td>
-											<td class="description-cell">
-												{{ item.VariableDescription }}
-											</td>
-											<td>
-												<span
-													class="type-badge"
-													:class="getTypeBadgeClass(item.Type)"
-													>{{ item.Type || 'Unknown' }}</span
+											<tr
+												:class="{ 'row-expanded': isRowExpanded(item.ID) }"
+												@click="toggleRowExpansion(item.ID)"
+												class="variable-row"
+											>
+												<td>
+													<div
+														:class="{
+															'expanded-content': isRowExpanded(
+																item.ID
+															),
+															'truncated-content': !isRowExpanded(
+																item.ID
+															),
+														}"
+													>
+														{{ item.ID || '-' }}
+													</div>
+												</td>
+												<td>
+													<div
+														:class="{
+															'expanded-content': isRowExpanded(
+																item.ID
+															),
+															'truncated-content': !isRowExpanded(
+																item.ID
+															),
+														}"
+													>
+														{{ item.Variable }}
+													</div>
+												</td>
+												<td class="description-cell">
+													<div
+														class="truncated-content"
+														v-if="!isRowExpanded(item.ID)"
+													>
+														{{ item.VariableDescription }}
+													</div>
+													<div class="expanded-content" v-else>
+														{{ item.VariableDescription }}
+													</div>
+												</td>
+												<td class="notes-cell">
+													<div
+														class="truncated-content"
+														v-if="!isRowExpanded(item.ID)"
+													>
+														{{ item.Notes || '-' }}
+													</div>
+													<div class="expanded-content" v-else>
+														{{ item.Notes || '-' }}
+													</div>
+												</td>
+												<td
+													v-if="isAuthenticated"
+													class="actions-column"
+													@click.stop
 												>
-											</td>
-											<td v-if="isAuthenticated" class="actions-column">
-												<button
-													class="btn btn-icon"
-													@click="editVariable(item)"
-												>
-													<i class="pi pi-pencil"></i>
-												</button>
-												<button
-													class="btn btn-icon text-danger"
-													@click="deleteVariable(item)"
-												>
-													<i class="pi pi-trash"></i>
-												</button>
-											</td>
-										</tr>
+													<button
+														class="btn btn-icon"
+														@click.stop="editVariable(item)"
+													>
+														<i class="pi pi-pencil"></i>
+													</button>
+													<button
+														class="btn btn-icon text-danger"
+														@click.stop="deleteVariable(item)"
+													>
+														<i class="pi pi-trash"></i>
+													</button>
+												</td>
+											</tr>
+										</template>
 									</tbody>
 								</table>
 							</div>
@@ -284,6 +385,7 @@ export default {
 			isAuthenticated: false, // You might want to connect this to your auth store
 			isLoading: true,
 			expandedCategories: [],
+			expandedRows: new Set(),
 			// Default column widths
 			columnWidths: ['15%', '20%', '20%', '35%', '10%'],
 			columnWidthsCategory: ['15%', '25%', '45%', '15%'],
@@ -296,10 +398,10 @@ export default {
 				{ label: 'Category', value: 'category' },
 				{ label: 'Variable', value: 'variable' },
 				{ label: 'Description', value: 'description' },
-				{ label: 'Type', value: 'type' },
+				{ label: 'Notes', value: 'notes' },
 			],
 			columns: [
-				{ field: 'id', header: 'ID', sortable: true, type: 'numeric' },
+				{ field: 'ID', header: 'ID', sortable: true, type: 'numeric' },
 				{ field: 'category', header: 'Category', sortable: true, type: 'text' },
 				{ field: 'Variable', header: 'Variable Name', sortable: true, type: 'text' },
 				{
@@ -308,8 +410,10 @@ export default {
 					sortable: false,
 					type: 'text',
 				},
-				{ field: 'Type', header: 'Type', sortable: true, type: 'text' },
+				{ field: 'Notes', header: 'Notes', sortable: false, type: 'text' },
 			],
+			tableWidth: 1000, // Default table width for calculations
+			initialWidths: null, // Store initial widths during resize
 		};
 	},
 	computed: {
@@ -343,7 +447,7 @@ export default {
 				return this.activeFilters.some((filter) => {
 					switch (filter) {
 						case 'id':
-							return item.id && String(item.id).toLowerCase().includes(query);
+							return item.ID && String(item.ID).toLowerCase().includes(query);
 						case 'category':
 							return item.category && item.category.toLowerCase().includes(query);
 						case 'variable':
@@ -353,8 +457,8 @@ export default {
 								item.VariableDescription &&
 								item.VariableDescription.toLowerCase().includes(query)
 							);
-						case 'type':
-							return item.Type && item.Type.toLowerCase().includes(query);
+						case 'notes':
+							return item.Notes && item.Notes.toLowerCase().includes(query);
 						default:
 							return false;
 					}
@@ -461,7 +565,8 @@ export default {
 			this.loadCodebook(true);
 		},
 		handleSearch: debounce(function () {
-			// The filteredResults computed property will handle this automatically
+			// Reset expanded rows when searching
+			this.expandedRows.clear();
 		}, 300),
 		clearSearch() {
 			this.searchQuery = '';
@@ -578,6 +683,7 @@ export default {
 		startResize(event, colIndex) {
 			// Prevent text selection during resize
 			event.preventDefault();
+			event.stopPropagation();
 			this.resizingColumn = colIndex;
 			this.resizingTable = 'main';
 			this.startX = event.pageX;
@@ -586,9 +692,22 @@ export default {
 			const thElement = event.target.closest('th');
 			const currentWidth = thElement.getBoundingClientRect().width;
 			this.startWidth = currentWidth;
+
+			// Get table width for calculations
+			this.tableWidth = event.target.closest('table').getBoundingClientRect().width;
+
+			// Store all initial column widths
+			this.initialWidths = this.columnWidths.map((width) => {
+				if (typeof width === 'string' && width.endsWith('%')) {
+					return (parseFloat(width) / 100) * this.tableWidth;
+				}
+				return parseFloat(width);
+			});
 		},
+
 		startResizeCategory(event, colIndex) {
 			event.preventDefault();
+			event.stopPropagation();
 			this.resizingColumn = colIndex;
 			this.resizingTable = 'category';
 			this.startX = event.pageX;
@@ -596,31 +715,106 @@ export default {
 			const thElement = event.target.closest('th');
 			const currentWidth = thElement.getBoundingClientRect().width;
 			this.startWidth = currentWidth;
+
+			// Get table width for calculations
+			this.tableWidth = event.target.closest('table').getBoundingClientRect().width;
+
+			// Store all initial column widths
+			this.initialWidths = this.columnWidthsCategory.map((width) => {
+				if (typeof width === 'string' && width.endsWith('%')) {
+					return (parseFloat(width) / 100) * this.tableWidth;
+				}
+				return parseFloat(width);
+			});
 		},
+
 		handleResize(event) {
 			if (this.resizingColumn === null) return;
 
 			const dx = event.pageX - this.startX;
-			const newWidth = this.startWidth + dx;
+			const newWidth = Math.max(60, this.startWidth + dx); // Minimum width of 60px
 
-			// Minimum width for columns
-			if (newWidth < 60) return;
-
-			// Update the relevant column's width
+			// Only adjust the width of the resizing column, not others
 			if (this.resizingTable === 'main') {
-				// Convert to percentage relative to table width
-				const tableWidth = event.target.closest('table')?.offsetWidth || 1000;
-				const percentWidth = (newWidth / tableWidth) * 100;
-				this.columnWidths[this.resizingColumn] = `${percentWidth}%`;
+				let newColumnWidths = [...this.columnWidths];
+				let currentWidthPct = parseFloat(this.columnWidths[this.resizingColumn]);
+				let newWidthPct = (newWidth / this.tableWidth) * 100;
+				let diffPct = newWidthPct - currentWidthPct;
+
+				// Only change the resizing column's width and adjust total to 100%
+				newColumnWidths[this.resizingColumn] = `${newWidthPct}%`;
+
+				// Calculate remaining percentage (should be 100% minus the new width of resized column)
+				let totalOtherColumns = 100 - newWidthPct;
+				let currentOtherColumns = 0;
+
+				// Calculate current total of other columns
+				for (let i = 0; i < newColumnWidths.length; i++) {
+					if (i !== this.resizingColumn) {
+						currentOtherColumns += parseFloat(newColumnWidths[i]);
+					}
+				}
+
+				// Adjust other columns proportionally
+				let adjustmentFactor = totalOtherColumns / currentOtherColumns;
+				for (let i = 0; i < newColumnWidths.length; i++) {
+					if (i !== this.resizingColumn) {
+						let currentWidth = parseFloat(newColumnWidths[i]);
+						newColumnWidths[i] = `${currentWidth * adjustmentFactor}%`;
+					}
+				}
+
+				this.columnWidths = newColumnWidths;
 			} else if (this.resizingTable === 'category') {
-				const tableWidth = event.target.closest('table')?.offsetWidth || 1000;
-				const percentWidth = (newWidth / tableWidth) * 100;
-				this.columnWidthsCategory[this.resizingColumn] = `${percentWidth}%`;
+				// Handle category table columns similarly
+				let newColumnWidths = [...this.columnWidthsCategory];
+				let currentWidthPct = parseFloat(this.columnWidthsCategory[this.resizingColumn]);
+				let newWidthPct = (newWidth / this.tableWidth) * 100;
+				let diffPct = newWidthPct - currentWidthPct;
+
+				// Only change the resizing column's width
+				newColumnWidths[this.resizingColumn] = `${newWidthPct}%`;
+
+				// Calculate remaining percentage
+				let totalOtherColumns = 100 - newWidthPct;
+				let currentOtherColumns = 0;
+
+				// Calculate current total of other columns
+				for (let i = 0; i < newColumnWidths.length; i++) {
+					if (i !== this.resizingColumn) {
+						currentOtherColumns += parseFloat(newColumnWidths[i]);
+					}
+				}
+
+				// Adjust other columns proportionally
+				let adjustmentFactor = totalOtherColumns / currentOtherColumns;
+				for (let i = 0; i < newColumnWidths.length; i++) {
+					if (i !== this.resizingColumn) {
+						let currentWidth = parseFloat(newColumnWidths[i]);
+						newColumnWidths[i] = `${currentWidth * adjustmentFactor}%`;
+					}
+				}
+
+				this.columnWidthsCategory = newColumnWidths;
 			}
 		},
+
 		stopResize() {
 			this.resizingColumn = null;
 			this.resizingTable = null;
+			this.initialWidths = null;
+		},
+		toggleRowExpansion(id) {
+			if (this.expandedRows.has(id)) {
+				this.expandedRows.delete(id);
+			} else {
+				this.expandedRows.add(id);
+			}
+		},
+
+		// Check if a row is expanded
+		isRowExpanded(id) {
+			return this.expandedRows.has(id);
 		},
 	},
 };
@@ -787,7 +981,8 @@ export default {
 }
 
 /* Descriptions can wrap */
-.description-cell {
+.description-cell,
+.notes-cell {
 	white-space: normal;
 	word-break: break-word;
 }
@@ -819,13 +1014,16 @@ export default {
 	right: 0;
 	top: 0;
 	height: 100%;
-	width: 5px;
+	width: 8px;
 	background-color: transparent;
 	cursor: col-resize;
+	z-index: 10;
 }
 
-.column-resizer:hover {
+.column-resizer:hover,
+.column-resizer:active {
 	background-color: var(--bs-primary);
+	opacity: 0.5;
 }
 
 .categories-wrapper {
@@ -880,6 +1078,41 @@ export default {
 	max-height: 400px; /* Limit height for large categories */
 }
 
+.variable-row {
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.variable-row:hover {
+	background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.dark-mode .variable-row:hover {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.row-expanded {
+	background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+}
+
+.dark-mode .row-expanded {
+	background-color: rgba(var(--bs-primary-rgb), 0.2) !important;
+}
+
+.truncated-content {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-height: 1.5em;
+}
+
+.expanded-content {
+	white-space: normal;
+	overflow: visible;
+	max-height: none;
+	padding: 0.5rem 0;
+}
+
 .sortable {
 	cursor: pointer;
 }
@@ -920,8 +1153,8 @@ export default {
 }
 
 .actions-column {
-	width: 100px;
-	text-align: right !important;
+	position: relative;
+	z-index: 5;
 }
 
 .btn-icon {
